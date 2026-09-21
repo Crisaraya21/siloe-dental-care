@@ -10,6 +10,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        gold: "bg-gradient-to-r from-primary to-gold-light text-primary-foreground shadow-gold hover:brightness-105",
+        goldOutline: "border border-primary/50 bg-transparent text-primary hover:bg-primary/10",
+        whatsapp: "bg-whatsapp text-primary-foreground shadow-whatsapp hover:brightness-105",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
