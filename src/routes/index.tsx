@@ -1,24 +1,141 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
+import {
+  ArrowRight, Bone, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Crown,
+  ExternalLink, HeartHandshake, Info, Instagram, MapPin, Menu, Minus, Phone,
+  Scissors, Smile, Sparkle, Star, Stethoscope, Sun, Wind, X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import heroImage from "@/assets/siloe-hero.jpg";
+import logoAsset from "@/assets/image-9.png.asset.json";
+import esteticaAsset from "@/assets/estetica.png.asset.json";
+import carillasAsset from "@/assets/carillas.png.asset.json";
+import blanqueamientoAsset from "@/assets/blanqueamiento.png.asset.json";
+import coronasAsset from "@/assets/coronas.png.asset.json";
+import protesisAsset from "@/assets/protesis.png.asset.json";
+import extraccionesAsset from "@/assets/extracciones.png.asset.json";
+import cirugiaAsset from "@/assets/cirugia.png.asset.json";
+import limpiezaAsset from "@/assets/limpieza.png.asset.json";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({ meta: [
+    { title: "Clínica Dental Siloé | Sonrisas que iluminan" },
+    { name: "description", content: "Solicita tu cita dental en Clínica Dental Siloé. Estética, carillas, blanqueamiento, cirugía y atención humana." },
+    { property: "og:title", content: "Clínica Dental Siloé" },
+    { property: "og:description", content: "Tu sonrisa es la luz de tu historia. Solicita tu cita en línea." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ]}),
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+const SERVICES = [
+  { icon: Sparkle, title: "Estética Dental", image: esteticaAsset.url, desc: "Diseño de sonrisa y armonía estética integral para resultados naturales.", fullDesc: "Combinamos diseño de sonrisa, armonía facial y técnicas de estética dental para realzar la belleza natural de tus dientes. Incluye evaluación digital, fotografía clínica y un plan totalmente personalizado.", price: "Desde ¢150.000" },
+  { icon: Smile, title: "Carillas", image: carillasAsset.url, desc: "Láminas de cerámica ultrafinas que renuevan forma y color dental.", fullDesc: "Carillas de cerámica de alta translucidez que se adhieren a la cara frontal del diente, corrigiendo forma, tamaño, color y leves desalineaciones. Resultados naturales y duraderos.", price: "Desde ¢350.000 / pieza" },
+  { icon: Sun, title: "Blanqueamiento", image: blanqueamientoAsset.url, desc: "Aclara varios tonos tu sonrisa en una sola sesión, seguro e indoloro.", fullDesc: "Tratamiento profesional que aclara el color de tus dientes varios tonos en una sesión, con gel de alta concentración y luz LED. Indoloro y con resultados visibles de inmediato.", price: "Desde ¢120.000" },
+  { icon: Crown, title: "Coronas y Puentes", image: coronasAsset.url, desc: "Restauraciones de cerámica que devuelven forma y función a piezas dañadas.", fullDesc: "Coronas y puentes de cerámica metal-free que restauran dientes dañados o ausentes, devolviendo forma, función y estética. Materiales de alta resistencia y apariencia natural.", price: "Desde ¢280.000 / pieza" },
+  { icon: Bone, title: "Prótesis Dentales", image: protesisAsset.url, desc: "Prótesis fijas y removibles que recuperan tu mordida y tu sonrisa.", fullDesc: "Soluciones protésicas fijas y removibles para reponer dientes perdidos: prótesis totales, parciales e implanto-soportadas. Diseñadas para comodidad, función y estética.", price: "Desde ¢450.000" },
+  { icon: Scissors, title: "Extracciones", image: extraccionesAsset.url, desc: "Extracciones sencillas y complejas con técnica mínimamente invasiva.", fullDesc: "Extracción de piezas dentales con técnicas mínimamente invasivas y anestesia local. Incluye evaluación previa y recomendaciones de cuidado postoperatorio.", price: "Desde ¢45.000" },
+  { icon: Stethoscope, title: "Cirugía", image: cirugiaAsset.url, desc: "Cirugía oral e implantología con tecnología de vanguardia.", fullDesc: "Cirugía oral e implantología: colocación de implantes, extracciones complejas de cordales y cirugía de tejidos. Protocolos estériles y tecnología de vanguardia.", price: "Desde ¢350.000" },
+  { icon: Wind, title: "Limpieza Dental", image: limpiezaAsset.url, desc: "Profilaxis profunda para encías sanas y una sonrisa fresca.", fullDesc: "Profilaxis dental profesional que elimina sarro, manchas y placa. Incluye pulido y aplicación de flúor para mantener encías sanas y prevenir caries.", price: "Desde ¢35.000" },
+] as const;
+
+type Service = (typeof SERVICES)[number];
+type Review = { id: string; name: string; rating: number; text: string; created_at: string };
+const HOURS = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+const FAQS = [
+  ["¿Cómo solicito mi primera cita?", "Completa el formulario de tres pasos o escríbenos por WhatsApp. Te contactaremos para confirmar disponibilidad."],
+  ["¿Cuánto dura una primera consulta?", "Por lo general dura entre 45 y 60 minutos e incluye una valoración completa y explicación del plan recomendado."],
+  ["¿Aceptan seguros dentales?", "Trabajamos con reembolso según las condiciones de tu aseguradora. Te ayudamos con la documentación necesaria."],
+  ["¿El blanqueamiento dental daña el esmalte?", "Realizado bajo supervisión profesional, es un procedimiento seguro que no desgasta el esmalte."],
+  ["¿Cada cuánto debo ir a una limpieza dental?", "Recomendamos una limpieza cada seis meses, aunque la frecuencia puede variar según tu salud oral."],
+  ["¿Qué métodos de pago aceptan?", "Aceptamos efectivo, transferencia, tarjetas y pagos en línea mediante Stripe."],
+  ["¿Atienden emergencias dentales?", "Sí. Contáctanos por WhatsApp para valorar tu situación y ofrecerte el espacio disponible más cercano."],
+] as const;
+const inputClass = "h-12 border-primary/20 bg-background px-4 focus-visible:ring-primary";
+
+function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeService, setActiveService] = useState<Service | null>(null);
+  useEffect(() => { const fn = () => setScrolled(window.scrollY > 24); fn(); window.addEventListener("scroll", fn); return () => window.removeEventListener("scroll", fn); }, []);
+  const go = (id: string) => { setMenuOpen(false); document.querySelector(id)?.scrollIntoView({ behavior: "smooth" }); };
+  return <main id="inicio" className="min-h-screen bg-ink text-foreground">
+    <header className={`fixed inset-x-0 top-0 z-40 transition-all ${scrolled || menuOpen ? "border-b border-primary/20 bg-ink/90 backdrop-blur-xl" : "bg-transparent"}`}>
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <a href="#inicio" className="flex items-center gap-3" aria-label="Clínica Dental Siloé">
+          <img src={logoAsset.url} alt="Logo Clínica Dental Siloé" className="size-12 rounded-full border border-primary/50 object-cover" />
+          <div className="font-heading text-sm font-semibold leading-tight text-primary sm:text-base"><span className="block">CLÍNICA DENTAL</span><span className="block tracking-[0.28em] text-ivory">SILOÉ</span></div>
+        </a>
+        <nav className="hidden items-center gap-8 lg:flex">{[["Inicio","#inicio"],["Servicios","#servicios"],["Solicitar","#agendar"],["Reseñas","#resenas"],["Preguntas","#faq"],["Ubicación","#ubicacion"]].map(([label,id]) => <a key={id} href={id} className="text-sm text-ivory/75 transition-colors hover:text-primary">{label}</a>)}</nav>
+        <Button variant="gold" size="lg" className="hidden rounded-full px-6 lg:inline-flex" onClick={() => go("#agendar")}>Solicitar Cita</Button>
+        <Button variant="ghost" size="icon" className="text-ivory lg:hidden" aria-label="Abrir menú" onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X/> : <Menu/>}</Button>
+      </div>
+      {menuOpen && <nav className="border-t border-primary/15 bg-ink px-5 py-5 lg:hidden">{[["Inicio","#inicio"],["Servicios","#servicios"],["Solicitar","#agendar"],["Reseñas","#resenas"],["Preguntas","#faq"],["Ubicación","#ubicacion"]].map(([label,id]) => <a key={id} href={id} onClick={() => setMenuOpen(false)} className="block border-b border-ivory/10 py-3 text-ivory">{label}</a>)}</nav>}
+    </header>
+
+    <section className="relative mx-auto grid min-h-screen max-w-7xl items-center gap-14 overflow-hidden px-5 pb-16 pt-28 sm:px-8 lg:grid-cols-[1fr_1.08fr]">
+      <div className="absolute left-1/4 top-1/3 size-64 rounded-full bg-primary/10 blur-[120px]" />
+      <div className="relative z-10">
+        <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-primary"><Sparkle size={14}/> Sonrisas que iluminan</div>
+        <h1 className="max-w-2xl text-5xl font-semibold leading-[1.05] text-ivory sm:text-7xl">Tu sonrisa es <span className="gold-text block">la luz de tu historia</span></h1>
+        <p className="mt-7 max-w-xl text-lg leading-8 text-ivory/70">Combinamos precisión clínica con un trato cálido y humano. Cuidamos cada detalle para que tu experiencia sea tan serena como tu sonrisa.</p>
+        <div className="mt-9 flex flex-wrap gap-4"><Button variant="gold" size="lg" className="h-14 rounded-full px-7" onClick={() => go("#agendar")}><CalendarDays/> Solicitar Cita</Button><Button variant="goldOutline" size="lg" className="h-14 rounded-full px-7 text-ivory" onClick={() => go("#servicios")}>Nuestros Servicios</Button></div>
+        <div className="mt-12 grid max-w-xl grid-cols-3 gap-4">{[["+15","Años de experiencia"],["+5.000","Sonrisas transformadas"],["100%","Trato humano"]].map(([n,l]) => <div key={n}><strong className="font-heading text-2xl font-medium text-primary">{n}</strong><span className="mt-1 block text-xs text-ivory/55">{l}</span></div>)}</div>
+      </div>
+      <div className="relative z-10 mx-auto w-full max-w-xl pt-4"><div className="absolute -inset-3 rounded-[2rem] border border-primary/30"/><img src={heroImage} width={1200} height={1400} alt="Paciente sonriendo en Clínica Dental Siloé" className="relative aspect-[4/4.1] w-full rounded-[1.7rem] object-cover object-center"/><div className="absolute -bottom-5 left-[-1rem] rounded-2xl bg-ivory px-6 py-5 text-ink shadow-2xl sm:left-[-2rem]"><p className="font-heading text-lg">Atención personalizada</p><p className="mt-1 text-xs text-gold-muted">Tecnología de vanguardia</p></div></div>
+    </section>
+
+    <section id="servicios" className="bg-ivory py-24 sm:py-28"><SectionTitle eyebrow="Nuestros servicios" title="Un atelier dental al servicio de tu bienestar" subtitle="Cada tratamiento se diseña a la medida de tus necesidades, con materiales premium y un enfoque humano."/>
+      <div className="mx-auto mt-14 grid max-w-7xl gap-6 px-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">{SERVICES.map(s => { const Icon=s.icon; return <article key={s.title} className="group flex overflow-hidden rounded-2xl border border-ink/5 bg-background shadow-sm transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold"><div className="flex w-full flex-col"><div className="relative h-44 overflow-hidden"><img src={s.image} alt={s.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105"/><span className="absolute left-3 top-3 grid size-11 place-items-center rounded-xl bg-background/90 text-primary backdrop-blur"><Icon size={20}/></span></div><div className="flex flex-1 flex-col p-6"><h3 className="text-xl text-ink">{s.title}</h3><p className="mt-2 flex-1 text-sm leading-6 text-ink/60">{s.desc}</p><div className="mt-5 flex items-center justify-between gap-3 border-t border-ink/10 pt-4"><span className="text-sm font-semibold text-gold-muted">{s.price}</span><Button variant="ghost" size="sm" className="px-2 text-ink hover:text-primary" onClick={() => setActiveService(s)}><Info/> Ver ficha</Button></div></div></div></article>})}</div><p className="mx-auto mt-7 max-w-7xl px-5 text-xs text-ink/50 sm:px-8">* Precios referenciales. El costo final se confirma después de la valoración profesional.</p>
+    </section>
+
+    <Booking />
+    <Faq />
+    <Reviews />
+    <Location />
+    <InstagramFeed />
+    <Footer />
+    <a href="https://wa.me/50670137712?text=Hola%2C%20quisiera%20solicitar%20una%20cita%20en%20Cl%C3%ADnica%20Dental%20Silo%C3%A9." target="_blank" rel="noreferrer" aria-label="Chatea con un especialista" className="group fixed bottom-5 right-5 z-40"><span className="animate-soft-ping absolute inset-0 rounded-full bg-whatsapp/50"/><span className="relative grid size-14 place-items-center rounded-full bg-whatsapp text-primary-foreground shadow-whatsapp"><Phone size={24}/></span><span className="absolute bottom-2 right-16 hidden whitespace-nowrap rounded-md bg-ink px-3 py-2 text-xs text-ivory shadow-lg group-hover:block lg:block lg:opacity-0 lg:transition lg:group-hover:opacity-100">Chatea con un especialista</span></a>
+    <Dialog open={Boolean(activeService)} onOpenChange={open => !open && setActiveService(null)}><DialogContent className="max-h-[90vh] overflow-y-auto border-primary/25 p-0 sm:max-w-2xl sm:rounded-2xl">{activeService && <><img src={activeService.image} alt={activeService.title} className="h-64 w-full object-cover"/><div className="p-7 sm:p-9"><DialogTitle className="font-heading text-3xl text-ink">{activeService.title}</DialogTitle><DialogDescription className="mt-4 text-base leading-7 text-ink/65">{activeService.fullDesc}</DialogDescription><p className="mt-5 font-semibold text-gold-muted">Precio estimado: {activeService.price.replace("Desde ","")}</p><Button variant="gold" size="lg" className="mt-7 w-full rounded-full" onClick={() => { setActiveService(null); setTimeout(() => go("#agendar"),150); }}>Solicitar este servicio <ArrowRight/></Button></div></>}</DialogContent></Dialog>
+  </main>;
 }
+
+function SectionTitle({ eyebrow, title, subtitle, dark=false }: { eyebrow:string; title:string; subtitle:string; dark?:boolean }) { return <div className="mx-auto max-w-3xl px-5 text-center"><p className="section-eyebrow">{eyebrow}</p><h2 className={`mt-4 text-4xl leading-tight sm:text-5xl ${dark ? "text-ivory" : "text-ink"}`}>{title}</h2><p className={`mx-auto mt-5 max-w-2xl text-lg leading-7 ${dark ? "text-ivory/60" : "text-ink/60"}`}>{subtitle}</p></div>; }
+
+function Booking() {
+  const [step,setStep]=useState(1), [service,setService]=useState(""), [date,setDate]=useState(""), [time,setTime]=useState(""), [sent,setSent]=useState(false), [loading,setLoading]=useState(false), [error,setError]=useState("");
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone:"America/Costa_Rica", year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
+  async function submit(e:FormEvent<HTMLFormElement>) { e.preventDefault(); const form=new FormData(e.currentTarget); setLoading(true); setError(""); const { error:dbError }=await supabase.from("appointments").insert({ name:String(form.get("name")), phone:String(form.get("phone")), email:String(form.get("email")||"")||null, service, preferred_date:date, preferred_time:time, message:String(form.get("message")||"")||null }); setLoading(false); if(dbError){setError("No pudimos enviar la solicitud. Inténtalo de nuevo o contáctanos por WhatsApp."); return;} setSent(true); }
+  return <section id="agendar" className="bg-ink py-24 sm:py-28"><SectionTitle dark eyebrow="Solicita tu cita" title="Solicita en tres pasos" subtitle="Selecciona el servicio, elige fecha y hora, y déjanos tus datos. Te contactaremos para confirmar."/><div className="mx-auto mt-14 max-w-4xl px-5 sm:px-8"><div className="rounded-2xl border border-primary/25 bg-ivory/5 p-6 sm:p-10">
+    {sent ? <div className="py-12 text-center"><span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-ink"><Check size={30}/></span><h3 className="mt-6 text-3xl text-ivory">Solicitud recibida</h3><p className="mx-auto mt-3 max-w-md text-ivory/60">Gracias. Te contactaremos pronto para confirmar el día y la hora de tu cita.</p><Button variant="goldOutline" className="mt-7 rounded-full" onClick={() => {setSent(false);setStep(1);setService("");setDate("");setTime("");}}>Solicitar otra cita</Button></div> : <>
+      <div className="mx-auto mb-10 flex max-w-xs items-center">{[1,2,3].map((n,i)=><div key={n} className="contents"><span className={`grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold ${step>=n?"bg-primary text-ink":"bg-ivory/10 text-ivory/40"}`}>{n}</span>{i<2&&<span className={`h-px flex-1 ${step>n?"bg-primary":"bg-ivory/10"}`}/>}</div>)}</div>
+      {step===1 && <div><h3 className="mb-7 text-center text-2xl text-ivory">¿Qué servicio necesitas?</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{SERVICES.map(s=><Button key={s.title} variant="ghost" className={`h-14 justify-start border px-5 text-left text-ivory ${service===s.title?"border-primary bg-primary/15 text-primary":"border-ivory/15 hover:border-primary/50 hover:bg-ivory/5"}`} onClick={()=>setService(s.title)}>{service===s.title&&<Check/>}{s.title}</Button>)}</div><div className="mt-8 flex justify-end"><Button variant="gold" size="lg" disabled={!service} onClick={()=>setStep(2)}>Continuar <ChevronRight/></Button></div></div>}
+      {step===2 && <div><h3 className="mb-7 text-center text-2xl text-ivory">Elige fecha y hora</h3><div className="mx-auto grid max-w-xl gap-5 sm:grid-cols-2"><label className="text-sm text-ivory/70">Fecha<Input type="date" min={today} value={date} onChange={e=>setDate(e.target.value)} className="mt-2 h-12 border-ivory/20 bg-ivory/5 text-ivory [color-scheme:dark]"/></label><label className="text-sm text-ivory/70">Hora<select value={time} onChange={e=>setTime(e.target.value)} className="mt-2 h-12 w-full rounded-md border border-ivory/20 bg-ink px-4 text-ivory outline-none focus:border-primary"><option value="">Seleccionar</option>{HOURS.map(h=><option key={h}>{h}</option>)}</select></label></div><div className="mt-8 flex justify-between"><Button variant="ghost" className="text-ivory" onClick={()=>setStep(1)}><ChevronLeft/> Atrás</Button><Button variant="gold" size="lg" disabled={!date||!time} onClick={()=>setStep(3)}>Continuar <ChevronRight/></Button></div></div>}
+      {step===3 && <form onSubmit={submit}><h3 className="mb-7 text-center text-2xl text-ivory">Cuéntanos cómo contactarte</h3><div className="grid gap-4 sm:grid-cols-2"><Input name="name" required minLength={2} placeholder="Nombre completo *" className="h-12 border-ivory/20 bg-ivory/5 px-4 text-ivory placeholder:text-ivory/40"/><Input name="phone" required minLength={7} placeholder="Teléfono *" className="h-12 border-ivory/20 bg-ivory/5 px-4 text-ivory placeholder:text-ivory/40"/><Input name="email" type="email" placeholder="Correo electrónico" className="h-12 border-ivory/20 bg-ivory/5 px-4 text-ivory placeholder:text-ivory/40 sm:col-span-2"/><Textarea name="message" placeholder="Mensaje o detalle adicional" className="min-h-28 border-ivory/20 bg-ivory/5 p-4 text-ivory placeholder:text-ivory/40 sm:col-span-2"/></div>{error&&<p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}<div className="mt-8 flex justify-between"><Button type="button" variant="ghost" className="text-ivory" onClick={()=>setStep(2)}><ChevronLeft/> Atrás</Button><Button type="submit" variant="gold" size="lg" disabled={loading}>{loading?"Enviando…":"Enviar solicitud"} <ArrowRight/></Button></div></form>}
+    </>}
+  </div></div></section>;
+}
+
+function Faq(){const [open,setOpen]=useState<number|null>(null);return <section id="faq" className="bg-ivory py-24 sm:py-28"><SectionTitle eyebrow="Preguntas frecuentes" title="Resolvemos tus dudas" subtitle="Aquí encontrarás respuestas a las consultas más comunes. ¿No encuentras lo que buscas? Escríbenos."/><div className="mx-auto mt-14 max-w-4xl space-y-3 px-5 sm:px-8">{FAQS.map(([q,a],i)=><div key={q} className="overflow-hidden rounded-2xl border border-ink/10 bg-background"><Button variant="ghost" className="h-auto w-full justify-between whitespace-normal p-6 text-left hover:bg-transparent" onClick={()=>setOpen(open===i?null:i)} aria-expanded={open===i}><span className="font-heading text-lg text-ink sm:text-xl">{q}</span><span className={`ml-4 grid size-10 shrink-0 place-items-center rounded-full ${open===i?"bg-gradient-to-r from-primary to-gold-light text-ink":"bg-ink/5 text-ink"}`}>{open===i?<Minus/>:<PlusIcon/>}</span></Button>{open===i&&<p className="px-6 pb-6 pr-20 leading-7 text-ink/60">{a}</p>}</div>)}</div></section>}
+function PlusIcon(){return <span className="text-2xl font-light leading-none">+</span>}
+
+function Reviews(){
+ const [rating,setRating]=useState(0),[hover,setHover]=useState(0),[reviews,setReviews]=useState<Review[]>([]),[show,setShow]=useState(false),[result,setResult]=useState<"google"|"private"|null>(null),[error,setError]=useState("");
+ useEffect(()=>{supabase.from("reviews").select("id,name,rating,text,created_at").order("created_at",{ascending:false}).then(({data})=>setReviews(data??[]));},[]);
+ async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();if(!rating){setError("Selecciona una calificación.");return;}const f=new FormData(e.currentTarget),name=String(f.get("name")),text=String(f.get("text"));const {data,error:dbError}=await supabase.from("reviews").insert({name,rating,text,posted_to_google:rating>=4}).select("id,name,rating,text,created_at").single();if(dbError){setError("No pudimos guardar tu reseña. Inténtalo de nuevo.");return;}if(data)setReviews(v=>[data,...v]);setResult(rating>=4?"google":"private");setError("");}
+ const avg=reviews.length?(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1):"—";
+ return <section id="resenas" className="bg-ivory py-24 sm:py-28"><SectionTitle eyebrow="Experiencias reales" title="Reseñas de nuestros pacientes" subtitle="Tu opinión nos ayuda a seguir cuidando cada detalle."/><div className="mx-auto mt-6 flex w-fit items-center gap-2 rounded-full border border-primary/25 bg-background px-5 py-2 text-sm text-ink">{[1,2,3,4,5].map(n=><Star key={n} size={16} className="fill-primary text-primary"/>)} <strong>{avg}</strong><span className="text-ink/50">· {reviews.length} reseñas</span></div>
+ <div className="mx-auto mt-12 max-w-2xl px-5 sm:px-8"><div className="rounded-2xl border border-primary/25 bg-background p-6 shadow-gold sm:p-10">{result ? <div className="py-8 text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-primary text-ink"><HeartHandshake/></span><h3 className="mt-5 text-3xl text-ink">¡Gracias!</h3><p className="mx-auto mt-3 max-w-md text-ink/60">{result==="google"?"Nos alegra saber que tu experiencia fue positiva. ¿Deseas compartirla también en Google?":"Gracias por contarnos tu experiencia. Tu comentario fue guardado de forma interna para ayudarnos a mejorar."}</p>{result==="google"&&<div className="mt-7 flex flex-wrap justify-center gap-3"><Button variant="gold" asChild><a href="https://share.google/8UEfzPpLOgH7UgZY9" target="_blank" rel="noreferrer">Sí, publicar en Google <ExternalLink/></a></Button><Button variant="outline" onClick={()=>setResult(null)}>No, gracias</Button></div>}</div> : <form onSubmit={submit}><h3 className="text-center text-2xl text-ink">Cuéntanos tu experiencia</h3><p className="mt-2 text-center text-sm text-ink/50">Las reseñas de 4 y 5 estrellas también pueden compartirse en Google.</p><div className="my-7 flex justify-center gap-3" onMouseLeave={()=>setHover(0)}>{[1,2,3,4,5].map(n=><Button type="button" variant="ghost" size="icon" key={n} aria-label={`${n} estrellas`} onMouseEnter={()=>setHover(n)} onClick={()=>setRating(n)} className="size-11 hover:bg-transparent"><Star size={34} strokeWidth={1.6} className={`${n<=(hover||rating)?"fill-primary text-primary":"text-ink"}`}/></Button>)}</div><div className="space-y-4"><Input name="name" required minLength={2} placeholder="Tu nombre" className={inputClass}/><Textarea name="text" required minLength={3} placeholder="Escribe tu reseña…" className="min-h-28 border-primary/20 bg-background p-4 focus-visible:ring-primary"/></div>{error&&<p className="mt-3 text-sm text-destructive">{error}</p>}<Button type="submit" variant="gold" size="lg" className="mt-6 w-full rounded-full"><Star/> Publicar reseña</Button></form>}</div>{reviews.length>0&&<div className="mt-10 text-center"><Button variant="goldOutline" className="rounded-full" onClick={()=>setShow(v=>!v)}><Star/>{show?"Ocultar reseñas":`Ver reseñas (${reviews.length})`}</Button></div>}{show&&<div className="mt-7 grid gap-4 sm:grid-cols-2">{reviews.map(r=><article key={r.id} className="rounded-2xl border border-ink/10 bg-background p-5 text-left"><div className="flex gap-1">{[1,2,3,4,5].map(n=><Star key={n} size={15} className={n<=r.rating?"fill-primary text-primary":"text-ink/20"}/>)}</div><p className="mt-3 leading-6 text-ink/65">“{r.text}”</p><p className="mt-4 text-sm font-semibold text-ink">{r.name}</p></article>)}</div>}</div></section>;
+}
+
+function Location(){return <section id="ubicacion" className="bg-ink py-24 sm:py-28"><SectionTitle dark eyebrow="Visítanos" title="Nuestra ubicación" subtitle="Te esperamos en un espacio diseñado para tu confort. Consulta el mapa para la dirección exacta y cómo llegar."/><div className="mx-auto mt-14 grid max-w-7xl gap-7 px-5 sm:px-8 lg:grid-cols-[1.4fr_.8fr]"><iframe title="Mapa de Clínica Dental Siloé" src="https://www.google.com/maps?q=Cl%C3%ADnica%20Dental%20Silo%C3%A9%20Costa%20Rica&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="h-[420px] w-full rounded-2xl border border-primary/25 grayscale"/><div className="space-y-5"><InfoCard icon={<MapPin/>} title="Dirección"><p>Clínica Dental Siloé. Consulta el mapa para la dirección exacta y cómo llegar.</p></InfoCard><InfoCard icon={<Clock3/>} title="Horario"><p>Lun–Vie: 9:00–18:00<br/>Sáb: 9:00–13:00<br/>Domingo: cerrado</p></InfoCard><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1"><Button variant="gold" size="lg" asChild><a href="https://www.google.com/maps/search/?api=1&query=Cl%C3%ADnica+Dental+Silo%C3%A9+Costa+Rica" target="_blank" rel="noreferrer"><MapPin/> Cómo llegar</a></Button><Button variant="goldOutline" size="lg" className="text-ivory" asChild><a href="tel:70137712"><Phone/> 7013 7712</a></Button></div></div></div></section>}
+function InfoCard({icon,title,children}:{icon:React.ReactNode;title:string;children:React.ReactNode}){return <div className="flex gap-4 rounded-2xl border border-primary/20 bg-ivory/5 p-6"><span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary text-ink">{icon}</span><div><h3 className="text-xl text-ivory">{title}</h3><div className="mt-2 text-sm leading-6 text-ivory/60">{children}</div></div></div>}
+
+function InstagramFeed(){return <section id="instagram" className="bg-ivory py-24 sm:py-28"><SectionTitle eyebrow="Síguenos" title="Nuestro Instagram" subtitle="Descubre transformaciones, consejos y la vida en la clínica."/><div className="mt-8 text-center"><Button variant="gold" className="rounded-full" asChild><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer"><Instagram/> @clinicadentalsiloe</a></Button></div><div className="mx-auto mt-12 grid max-w-7xl grid-cols-2 gap-3 px-5 sm:px-8 lg:grid-cols-3">{["Transformaciones","Resultados","Clínica","Consejos","Sonrisas","Bienestar"].map((label,i)=><a key={label} href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className={`group relative aspect-square overflow-hidden rounded-2xl ${i%3===1?"bg-gradient-to-br from-gold-light to-primary":"bg-gradient-to-br from-ink to-gold-muted"}`}><div className="absolute inset-0 grid place-items-center bg-ink/15 transition group-hover:bg-ink/5"><div className="text-center text-ivory"><Instagram className="mx-auto" size={30}/><span className="mt-3 block font-heading text-lg">{label}</span></div></div></a>)}</div></section>}
+
+function Footer(){return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={logoAsset.url} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover"/><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios","#servicios"],["Solicitar","#agendar"],["Reseñas","#resenas"],["Preguntas","#faq"]].map(([l,h])=><a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16}/> 7013 7712</a><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16}/> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16}/> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 flex max-w-7xl flex-col gap-2 border-t border-ivory/10 pt-6 text-xs text-ivory/40 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} Clínica Dental Siloé</span><span>Sonrisas que iluminan</span></div></footer>}
