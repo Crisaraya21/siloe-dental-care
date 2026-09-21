@@ -24,6 +24,7 @@ export type Database = {
           phone: string
           preferred_date: string
           preferred_time: string
+          reminder_sent: boolean
           service: string
           status: string
           updated_at: string
@@ -37,6 +38,7 @@ export type Database = {
           phone: string
           preferred_date: string
           preferred_time: string
+          reminder_sent?: boolean
           service: string
           status?: string
           updated_at?: string
@@ -50,6 +52,7 @@ export type Database = {
           phone?: string
           preferred_date?: string
           preferred_time?: string
+          reminder_sent?: boolean
           service?: string
           status?: string
           updated_at?: string
