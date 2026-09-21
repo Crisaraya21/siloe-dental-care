@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAppointmentsRouteImport } from './routes/api/appointments'
 import { Route as ApiTestEmailRouteImport } from './routes/api/test-email'
+import { Route as ApiAppointmentsAcceptRouteImport } from './routes/api/appointments/accept'
+import { Route as ApiAppointmentsRejectRouteImport } from './routes/api/appointments/reject'
 import { Route as ApiCronRemindersRouteImport } from './routes/api/cron/reminders'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +31,16 @@ const ApiTestEmailRoute = ApiTestEmailRouteImport.update({
   path: '/api/test-email',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAppointmentsAcceptRoute = ApiAppointmentsAcceptRouteImport.update({
+  id: '/accept',
+  path: '/accept',
+  getParentRoute: () => ApiAppointmentsRoute,
+} as any)
+const ApiAppointmentsRejectRoute = ApiAppointmentsRejectRouteImport.update({
+  id: '/reject',
+  path: '/reject',
+  getParentRoute: () => ApiAppointmentsRoute,
+} as any)
 const ApiCronRemindersRoute = ApiCronRemindersRouteImport.update({
   id: '/api/cron/reminders',
   path: '/api/cron/reminders',
@@ -37,40 +49,59 @@ const ApiCronRemindersRoute = ApiCronRemindersRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/appointments': typeof ApiAppointmentsRoute
+  '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/test-email': typeof ApiTestEmailRoute
+  '/api/appointments/accept': typeof ApiAppointmentsAcceptRoute
+  '/api/appointments/reject': typeof ApiAppointmentsRejectRoute
   '/api/cron/reminders': typeof ApiCronRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/appointments': typeof ApiAppointmentsRoute
+  '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/test-email': typeof ApiTestEmailRoute
+  '/api/appointments/accept': typeof ApiAppointmentsAcceptRoute
+  '/api/appointments/reject': typeof ApiAppointmentsRejectRoute
   '/api/cron/reminders': typeof ApiCronRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/appointments': typeof ApiAppointmentsRoute
+  '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/test-email': typeof ApiTestEmailRoute
+  '/api/appointments/accept': typeof ApiAppointmentsAcceptRoute
+  '/api/appointments/reject': typeof ApiAppointmentsRejectRoute
   '/api/cron/reminders': typeof ApiCronRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/api/appointments' | '/api/test-email' | '/api/cron/reminders'
+    | '/'
+    | '/api/appointments'
+    | '/api/test-email'
+    | '/api/appointments/accept'
+    | '/api/appointments/reject'
+    | '/api/cron/reminders'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/appointments' | '/api/test-email' | '/api/cron/reminders'
+  to:
+    | '/'
+    | '/api/appointments'
+    | '/api/test-email'
+    | '/api/appointments/accept'
+    | '/api/appointments/reject'
+    | '/api/cron/reminders'
   id:
     | '__root__'
     | '/'
     | '/api/appointments'
     | '/api/test-email'
+    | '/api/appointments/accept'
+    | '/api/appointments/reject'
     | '/api/cron/reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiAppointmentsRoute: typeof ApiAppointmentsRoute
+  ApiAppointmentsRoute: typeof ApiAppointmentsRouteWithChildren
   ApiTestEmailRoute: typeof ApiTestEmailRoute
   ApiCronRemindersRoute: typeof ApiCronRemindersRoute
 }
@@ -98,6 +129,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTestEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/appointments/accept': {
+      id: '/api/appointments/accept'
+      path: '/accept'
+      fullPath: '/api/appointments/accept'
+      preLoaderRoute: typeof ApiAppointmentsAcceptRouteImport
+      parentRoute: typeof ApiAppointmentsRoute
+    }
+    '/api/appointments/reject': {
+      id: '/api/appointments/reject'
+      path: '/reject'
+      fullPath: '/api/appointments/reject'
+      preLoaderRoute: typeof ApiAppointmentsRejectRouteImport
+      parentRoute: typeof ApiAppointmentsRoute
+    }
     '/api/cron/reminders': {
       id: '/api/cron/reminders'
       path: '/api/cron/reminders'
@@ -108,9 +153,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ApiAppointmentsRouteChildren {
+  ApiAppointmentsAcceptRoute: typeof ApiAppointmentsAcceptRoute
+  ApiAppointmentsRejectRoute: typeof ApiAppointmentsRejectRoute
+}
+
+const ApiAppointmentsRouteChildren: ApiAppointmentsRouteChildren = {
+  ApiAppointmentsAcceptRoute: ApiAppointmentsAcceptRoute,
+  ApiAppointmentsRejectRoute: ApiAppointmentsRejectRoute,
+}
+
+const ApiAppointmentsRouteWithChildren = ApiAppointmentsRoute._addFileChildren(
+  ApiAppointmentsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiAppointmentsRoute: ApiAppointmentsRoute,
+  ApiAppointmentsRoute: ApiAppointmentsRouteWithChildren,
   ApiTestEmailRoute: ApiTestEmailRoute,
   ApiCronRemindersRoute: ApiCronRemindersRoute,
 }

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       appointments: {
         Row: {
+          action_token: string
           created_at: string
           email: string | null
           id: string
@@ -32,6 +33,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          action_token?: string
           created_at?: string
           email?: string | null
           id?: string

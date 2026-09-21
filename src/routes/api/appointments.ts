@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { randomUUID } from "node:crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendEmail } from "@/lib/mailer";
 
@@ -47,8 +48,9 @@ export const Route = createFileRoute("/api/appointments")({
               preferred_date: preferredDate,
               preferred_time: preferredTime,
               message,
+              action_token: randomUUID(),
             })
-            .select("id")
+            .select("id, action_token")
             .single();
 
           if (error || !appointment) {
@@ -64,6 +66,9 @@ export const Route = createFileRoute("/api/appointments")({
           const safeTime = escapeHtml(preferredTime);
           const safeMessage = escapeHtml(message ?? "Sin mensaje adicional");
           const secretaryEmail = process.env["SECRETARY_EMAIL"] || process.env["GMAIL_USER"];
+          const appUrl = process.env["PUBLIC_APP_URL"] || "http://localhost:3000";
+          const acceptUrl = `${appUrl}/api/appointments/accept?token=${appointment.action_token}`;
+          const rejectUrl = `${appUrl}/api/appointments/reject?token=${appointment.action_token}`;
 
           if (email) {
             await sendEmail(
@@ -77,7 +82,7 @@ export const Route = createFileRoute("/api/appointments")({
             await sendEmail(
               secretaryEmail,
               `Nueva solicitud de cita | ${name}`,
-              `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#24323d"><h2 style="color:#0f766e">Nueva solicitud de cita</h2><p>Se recibió una nueva solicitud pendiente de confirmación.</p><table style="border-collapse:collapse;width:100%"><tr><td><strong>Nombre</strong></td><td>${safeName}</td></tr><tr><td><strong>Teléfono</strong></td><td>${safePhone}</td></tr><tr><td><strong>Correo</strong></td><td>${safeEmail}</td></tr><tr><td><strong>Servicio</strong></td><td>${safeService}</td></tr><tr><td><strong>Fecha</strong></td><td>${safeDate}</td></tr><tr><td><strong>Hora</strong></td><td>${safeTime}</td></tr><tr><td><strong>Mensaje</strong></td><td>${safeMessage}</td></tr></table><p style="margin-top:24px">La solicitud quedó registrada como <strong>pendiente</strong>.</p></div>`,
+              `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#24323d"><h2 style="color:#0f766e">Nueva solicitud de cita</h2><p>Se recibió una nueva solicitud pendiente de confirmación.</p><table style="border-collapse:collapse;width:100%"><tr><td><strong>Nombre</strong></td><td>${safeName}</td></tr><tr><td><strong>Teléfono</strong></td><td>${safePhone}</td></tr><tr><td><strong>Correo</strong></td><td>${safeEmail}</td></tr><tr><td><strong>Servicio</strong></td><td>${safeService}</td></tr><tr><td><strong>Fecha</strong></td><td>${safeDate}</td></tr><tr><td><strong>Hora</strong></td><td>${safeTime}</td></tr><tr><td><strong>Mensaje</strong></td><td>${safeMessage}</td></tr></table><p style="margin-top:24px"><a href="${acceptUrl}" style="display:inline-block;padding:12px 18px;background:#0f766e;color:#fff;text-decoration:none">Aceptar cita</a> <a href="${rejectUrl}" style="display:inline-block;padding:12px 18px;background:#8b2635;color:#fff;text-decoration:none">Proponer otro horario</a></p></div>`,
             );
           }
 
