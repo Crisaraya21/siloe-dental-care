@@ -66,6 +66,14 @@ if (error) throw error;
 
 const now = Date.now();
 const in24Hours = now + 24 * 60 * 60 * 1000;
+const confirmed = (appointments ?? []).filter((appointment) => appointment.status === "confirmada");
+const withinWindow = confirmed.filter((appointment) => {
+  const timestamp = parseAppointmentTimestamp(
+    appointment.preferred_date,
+    appointment.preferred_time,
+  );
+  return timestamp !== null && timestamp >= now && timestamp <= in24Hours;
+});
 let sent = 0;
 
 for (const appointment of appointments ?? []) {
@@ -111,4 +119,10 @@ for (const appointment of appointments ?? []) {
   sent += 1;
 }
 
-console.log(JSON.stringify({ ok: true, enviados: sent }));
+console.log(JSON.stringify({
+  ok: true,
+  citas_leidas: appointments?.length ?? 0,
+  confirmadas: confirmed.length,
+  proximas_24h: withinWindow.length,
+  enviados: sent,
+}));
