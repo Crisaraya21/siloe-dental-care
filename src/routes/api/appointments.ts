@@ -38,6 +38,21 @@ export const Route = createFileRoute("/api/appointments")({
             return Response.json({ ok: false, error: "Faltan datos obligatorios." }, { status: 400 });
           }
 
+          const { data: existingAppointment } = await supabaseAdmin
+            .from("appointments")
+            .select("id")
+            .eq("preferred_date", preferredDate)
+            .eq("preferred_time", preferredTime)
+            .in("status", ["pendiente", "confirmada", "reprogramada_propuesta"])
+            .maybeSingle();
+
+          if (existingAppointment) {
+            return Response.json(
+              { ok: false, error: "Ese horario ya no está disponible. Elige otra fecha u hora." },
+              { status: 409 },
+            );
+          }
+
           const { data: appointment, error } = await supabaseAdmin
             .from("appointments")
             .insert({
