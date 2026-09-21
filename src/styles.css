@@ -1,5 +1,4 @@
-@import "tailwindcss" source(none);
-@source "../src";
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -19,10 +18,10 @@
  */
 
 @theme inline {
-  --font-heading: "Playfair Display", serif;
-  --font-display: "Playfair Display", serif;
-  --font-body: "Outfit", sans-serif;
-  --font-sans: "Outfit", sans-serif;
+  --font-heading: "Times New Roman", "Tinos", "Times", serif;
+  --font-display: "Times New Roman", "Tinos", "Times", serif;
+  --font-body: "Times New Roman", "Tinos", "Times", serif;
+  --font-sans: "Times New Roman", "Tinos", "Times", serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
