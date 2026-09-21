@@ -1,0 +1,17 @@
+name: Recordatorios de citas
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Cada hora en punto
+  workflow_dispatch: # También permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  recordatorios:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar endpoint de recordatorios
+        run: |
+          curl -sf -X GET "https://siloe-dental-care.lovable.app/api/cron/reminders" \
+            -H "Authorization: Bearer ${{ secrets.LOVABLE_CRON_SECRET }}" \
+            && echo "Recordatorios enviados OK" \
+            || echo "Error al llamar el endpoint"
