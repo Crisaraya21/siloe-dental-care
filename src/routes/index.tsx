@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import heroAsset from "@/assets/image.png.asset.json";
+import heroImage from "@/assets/siloe-hero.jpg";
 import logoAsset from "@/assets/image-9.png.asset.json";
 import esteticaAsset from "@/assets/estetica.png.asset.json";
 import carillasAsset from "@/assets/carillas.png.asset.json";
@@ -87,7 +87,7 @@ function Home() {
         <div className="mt-9 flex flex-wrap gap-4"><Button variant="gold" size="lg" className="h-14 rounded-full px-7" onClick={() => go("#agendar")}><CalendarDays/> Solicitar Cita</Button><Button variant="goldOutline" size="lg" className="h-14 rounded-full px-7 text-ivory" onClick={() => go("#servicios")}>Nuestros Servicios</Button></div>
         <div className="mt-12 grid max-w-xl grid-cols-3 gap-4">{[["+15","Años de experiencia"],["+5.000","Sonrisas transformadas"],["100%","Trato humano"]].map(([n,l]) => <div key={n}><strong className="font-heading text-2xl font-medium text-primary">{n}</strong><span className="mt-1 block text-xs text-ivory/55">{l}</span></div>)}</div>
       </div>
-      <div className="relative z-10 mx-auto w-full max-w-xl pt-4"><div className="absolute -inset-3 rounded-[2rem] border border-primary/30"/><img src={heroAsset.url} alt="Paciente sonriendo en Clínica Dental Siloé" className="relative aspect-[4/4.1] w-full rounded-[1.7rem] object-cover object-[72%_center]"/><div className="absolute -bottom-5 left-[-1rem] rounded-2xl bg-ivory px-6 py-5 text-ink shadow-2xl sm:left-[-2rem]"><p className="font-heading text-lg">Atención personalizada</p><p className="mt-1 text-xs text-gold-muted">Tecnología de vanguardia</p></div></div>
+      <div className="relative z-10 mx-auto w-full max-w-xl pt-4"><div className="absolute -inset-3 rounded-[2rem] border border-primary/30"/><img src={heroImage} width={1200} height={1400} alt="Paciente sonriendo en Clínica Dental Siloé" className="relative aspect-[4/4.1] w-full rounded-[1.7rem] object-cover object-center"/><div className="absolute -bottom-5 left-[-1rem] rounded-2xl bg-ivory px-6 py-5 text-ink shadow-2xl sm:left-[-2rem]"><p className="font-heading text-lg">Atención personalizada</p><p className="mt-1 text-xs text-gold-muted">Tecnología de vanguardia</p></div></div>
     </section>
 
     <section id="servicios" className="bg-ivory py-24 sm:py-28"><SectionTitle eyebrow="Nuestros servicios" title="Un atelier dental al servicio de tu bienestar" subtitle="Cada tratamiento se diseña a la medida de tus necesidades, con materiales premium y un enfoque humano."/>
