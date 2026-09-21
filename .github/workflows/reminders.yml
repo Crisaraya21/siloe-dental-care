@@ -9,9 +9,22 @@ jobs:
   recordatorios:
     runs-on: ubuntu-latest
     steps:
-      - name: Llamar endpoint de recordatorios
-        run: |
-          curl -sf -X GET "https://siloe-dental-care.lovable.app/api/cron/reminders" \
-            -H "Authorization: Bearer ${{ secrets.LOVABLE_CRON_SECRET }}" \
-            && echo "Recordatorios enviados OK" \
-            || echo "Error al llamar el endpoint"
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Enviar recordatorios
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: node scripts/send-reminders.mjs

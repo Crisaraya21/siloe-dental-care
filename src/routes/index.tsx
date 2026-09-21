@@ -21,8 +21,7 @@ import extraccionesAsset from "@/assets/extracciones.png.asset.json";
 import cirugiaAsset from "@/assets/cirugia.png.asset.json";
 import limpiezaAsset from "@/assets/limpieza.png.asset.json";
 
-const getAssetUrl = (url: string) =>
-  url.startsWith("/__l5e/") ? `https://siloe-dental-care.lovable.app${url}` : url;
+const getAssetUrl = (url: string) => url;
 
 export const Route = createFileRoute("/")({
   head: () => ({

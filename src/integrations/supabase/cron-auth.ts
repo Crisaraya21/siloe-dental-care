@@ -2,8 +2,8 @@
 export async function authenticateCronRequest(
   request: Request,
 ): Promise<Response | null> {
-  const currentSecret = process.env['LOVABLE_CRON_SECRET']
-  const previousSecret = process.env['LOVABLE_CRON_SECRET_PREVIOUS']
+  const currentSecret = process.env['SILOE_REMINDERS_CRON_TOKEN']
+  const previousSecret = process.env['SILOE_REMINDERS_CRON_TOKEN_PREVIOUS']
 
   if (!currentSecret) {
     return new Response('Server configuration error', { status: 500 })
