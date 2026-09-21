@@ -22,6 +22,8 @@ export type Database = {
           message: string | null
           name: string
           phone: string
+          proposed_date: string | null
+          proposed_time: string | null
           preferred_date: string
           preferred_time: string
           reminder_sent: boolean
@@ -36,6 +38,8 @@ export type Database = {
           message?: string | null
           name: string
           phone: string
+          proposed_date?: string | null
+          proposed_time?: string | null
           preferred_date: string
           preferred_time: string
           reminder_sent?: boolean
@@ -50,6 +54,8 @@ export type Database = {
           message?: string | null
           name?: string
           phone?: string
+          proposed_date?: string | null
+          proposed_time?: string | null
           preferred_date?: string
           preferred_time?: string
           reminder_sent?: boolean
