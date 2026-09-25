@@ -1,24 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomUUID } from "node:crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { escapeHtml, formatDate } from "@/lib/appointment-utils";
 import { sendEmail } from "@/lib/mailer";
 
-function escapeHtml(value: unknown) {
-  return String(value).replace(/[&<>\'"]/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;",
-  })[character] ?? character);
-}
 
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("es-CR", {
-    dateStyle: "full",
-    timeZone: "America/Costa_Rica",
-  }).format(new Date(`${date}T12:00:00-06:00`));
-}
 
 export const Route = createFileRoute("/api/appointments")({
   server: {
@@ -80,7 +66,7 @@ export const Route = createFileRoute("/api/appointments")({
           const safeDate = escapeHtml(formatDate(preferredDate));
           const safeTime = escapeHtml(preferredTime);
           const safeMessage = escapeHtml(message ?? "Sin mensaje adicional");
-          const secretaryEmail = process.env["SECRETARY_EMAIL"] || process.env["GMAIL_USER"];
+          const secretaryEmail = process.env["GMAIL_USER"];
           const appUrl = process.env["PUBLIC_APP_URL"] || "http://localhost:3000";
           const acceptUrl = `${appUrl}/api/appointments/accept?token=${appointment.action_token}`;
           const rejectUrl = `${appUrl}/api/appointments/reject?token=${appointment.action_token}`;

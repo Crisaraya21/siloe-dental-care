@@ -12,4 +12,15 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  build: {
+    rollupOptions: {
+      external: ["nodemailer"],
+    },
+    rolldownOptions: {
+      external: ["nodemailer"],
+    },
+  },
+  ssr: {
+    external: ["nodemailer"],
+  },
 });
