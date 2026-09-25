@@ -47,6 +47,15 @@ export function buildWhatsAppUrl(phone: string, message: string) {
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
 }
 
+export function getTodayDate() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Costa_Rica" });
+}
+
+export function isAppointmentClosedDate(date: string) {
+  const dayOfWeek = new Date(`${date}T12:00:00-06:00`).getDay();
+  return APPOINTMENT_CLOSED_DAYS.includes(dayOfWeek);
+}
+
 export function formatLongDate(date: string) {
   return new Intl.DateTimeFormat("es-CR", {
     weekday: "long",

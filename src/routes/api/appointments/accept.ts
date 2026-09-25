@@ -76,7 +76,16 @@ export const Route = createFileRoute("/api/appointments/accept")({
           );
         }
 
-        const whatsappMessage = `Hola ${appointment.name}, le informamos que su cita de ${appointment.service} el ${appointment.preferred_date} a las ${appointment.preferred_time} ha sido confirmada. Si necesita cambiar o cancelar su cita, comuníquese al 7013 7712. Clínica Dental Siloé.`;
+        const whatsappMessage = `Hola ${appointment.name} 👋
+      Le confirmamos su cita en Clínica Dental Siloé:
+
+      Servicio: ${appointment.service}
+      Fecha: ${formatDate(appointment.preferred_date)}
+      Hora: ${appointment.preferred_time}
+
+      Si necesita cambiar o cancelar su cita, puede escribirnos por este medio o llamarnos al 7013 7712.
+
+      ¡Le esperamos!`;
         const whatsappUrl = buildWhatsAppUrl(appointment.phone, whatsappMessage);
         const emailStatus = appointment.email
           ? `<p>Se envió la confirmación al correo: <strong>${escapeHtml(appointment.email)}</strong>.</p>`

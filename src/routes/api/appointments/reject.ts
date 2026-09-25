@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
-  APPOINTMENT_CLOSED_DAYS,
   APPOINTMENT_HOUR_SLOTS,
   buildWhatsAppUrl,
   escapeHtml,
   formatDate,
-  getNextClinicDates,
+  getTodayDate,
+  isAppointmentClosedDate,
   toHumanDayLabel,
 } from "@/lib/appointment-utils";
 
@@ -87,6 +87,13 @@ export const Route = createFileRoute("/api/appointments/reject")({
             return page("Fecha inválida", "<p>La fecha propuesta no puede estar en el pasado.</p>");
           }
 
+          if (isAppointmentClosedDate(proposedDate)) {
+            return page(
+              "Día no disponible",
+              `<p>La clínica no atiende ese día, por favor elija otra fecha.</p><p><a href="/api/appointments/reject?token=${encodeURIComponent(token)}" style="display:inline-block;padding:12px 18px;background:#0f766e;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Elegir otra fecha</a></p>`,
+            );
+          }
+
           const occupiedTimes = await getOccupiedTimesForDate(proposedDate);
           if (occupiedTimes.includes(proposedTime)) {
             return page("Horario ocupado", "<p>Ese horario ya fue tomado por otra cita. Elige otra hora.</p>");
@@ -105,7 +112,18 @@ export const Route = createFileRoute("/api/appointments/reject")({
             return page("No se pudo guardar la propuesta", "<p>Inténtalo nuevamente en unos minutos.</p>");
           }
 
-          const phoneMessage = `Hola ${appointment.name}, le saludamos de Clínica Dental Siloé. Lamentablemente no tenemos disponibilidad para su cita de ${appointment.service} el ${formatDate(appointment.preferred_date)} a las ${appointment.preferred_time}. Le proponemos el ${formatDate(proposedDate)} a las ${proposedTime}. ¿Le funciona ese horario? Cualquier consulta puede llamarnos al 7013 7712.`;
+          const phoneMessage = `Hola ${appointment.name} 👋
+Le saludamos de Clínica Dental Siloé.
+
+Lamentablemente no tenemos disponibilidad para su cita de ${appointment.service} el ${formatDate(appointment.preferred_date)} a las ${appointment.preferred_time}.
+
+Le proponemos:
+Fecha: ${formatDate(proposedDate)}
+Hora: ${proposedTime}
+
+¿Le funciona este horario? Puede responder por este medio o llamarnos al 7013 7712.
+
+Gracias por su comprensión.`;
           const whatsappUrl = buildWhatsAppUrl(appointment.phone, phoneMessage);
 
           return page(
@@ -121,6 +139,13 @@ export const Route = createFileRoute("/api/appointments/reject")({
 
           if (Number.isNaN(date.getTime()) || date < today) {
             return page("Fecha inválida", "<p>La fecha seleccionada ya no es válida.</p>");
+          }
+
+          if (isAppointmentClosedDate(selectedDate)) {
+            return page(
+              "Día no disponible",
+              `<p>La clínica no atiende ese día, por favor elija otra fecha.</p><p><a href="/api/appointments/reject?token=${encodeURIComponent(token)}" style="display:inline-block;padding:12px 18px;background:#0f766e;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Elegir otra fecha</a></p>`,
+            );
           }
 
           const occupied = await getOccupiedTimesForDate(selectedDate);
@@ -142,17 +167,11 @@ export const Route = createFileRoute("/api/appointments/reject")({
           );
         }
 
-        const dates = getNextClinicDates(14);
-        const choices = dates
-          .map(
-            (date) =>
-              `<a href="/api/appointments/reject?token=${encodeURIComponent(token)}&date=${encodeURIComponent(date)}" style="display:block;padding:14px 16px;background:#f4f4f4;border:1px solid #dcdcdc;border-radius:10px;text-decoration:none;color:#24323d;margin:10px 0;font-weight:bold">${escapeHtml(toHumanDayLabel(date))}</a>`,
-          )
-          .join("");
+        const todayDate = getTodayDate();
 
         return page(
           "¿Qué día hay disponible?",
-          `<p>Selecciona un día disponible para ${escapeHtml(appointment.name)}.</p><div style="margin-top:18px">${choices}</div>`,
+          `<p>Selecciona un día disponible para ${escapeHtml(appointment.name)}.</p><form method="get" action="/api/appointments/reject" style="margin-top:18px"><input type="hidden" name="token" value="${escapeHtml(token)}" /><label for="appointment-date" style="display:block;margin-bottom:8px;font-weight:bold">Fecha</label><input id="appointment-date" type="date" name="date" min="${todayDate}" required style="display:block;width:100%;box-sizing:border-box;padding:12px;border:1px solid #dcdcdc;border-radius:8px;font:inherit" /><button type="submit" style="display:inline-block;margin-top:14px;padding:12px 18px;background:#0f766e;color:#fff;border:0;border-radius:8px;font:inherit;font-weight:bold;cursor:pointer">Ver horarios disponibles</button></form>`,
         );
       },
     },
