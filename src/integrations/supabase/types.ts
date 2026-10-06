@@ -74,16 +74,16 @@ export type Database = {
           name: string
           posted_to_google: boolean
           rating: number
-          text: string
+          text: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
-          name: string
+          name?: string
           posted_to_google?: boolean
           rating: number
-          text: string
+          text?: string | null
           updated_at?: string
         }
         Update: {
@@ -92,7 +92,7 @@ export type Database = {
           name?: string
           posted_to_google?: boolean
           rating?: number
-          text?: string
+          text?: string | null
           updated_at?: string
         }
         Relationships: []
