@@ -34,11 +34,11 @@ const ROWS = [
     duration: "Sesión o hasta que la borres",
   },
   {
-    name: "Google Maps",
-    owner: "Google (tercero)",
+    name: "Mapa de ubicación",
+    owner: "OpenStreetMap y unpkg (terceros)",
     type: "De terceros",
-    purpose: "Muestra el mapa de la clínica. Al cargarlo, Google puede colocar sus propias cookies según su política.",
-    duration: "Según Google",
+    purpose: "Muestra el mapa de la clínica. Al cargarlo, estos servicios reciben tu dirección IP; no usamos el mapa para publicidad ni seguimiento.",
+    duration: "No guardamos cookies propias para el mapa",
   },
 ] as const;
 

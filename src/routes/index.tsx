@@ -5,7 +5,8 @@ import {
   ExternalLink, HeartHandshake, Info, Instagram, LoaderCircle, MapPin, Menu, MessageCircle, Phone,
   Star, X,
 } from "lucide-react";
-import { BOOKING_HOURS_WEEKDAY, SITE, getBookingHoursForDate, priceInquiryLink } from "@/lib/site";
+import { ClinicMap } from "@/components/clinic-map";
+import { BOOKING_HOURS_WEEKDAY, DIRECTIONS_URL, SITE, getBookingHoursForDate, priceInquiryLink } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -126,13 +127,12 @@ const CLINIC_SCHEDULE = {
   closesAtMinutesByDay: [0, 17 * 60 + 30, 17 * 60 + 30, 17 * 60 + 30, 17 * 60 + 30, 17 * 60 + 30, 12 * 60],
 } as const;
 const FAQS = [
-  ["¿Cómo solicito mi primera cita?", "Completa el formulario de tres pasos o escríbenos por WhatsApp. Te contactaremos para confirmar disponibilidad."],
-  ["¿Cuánto dura una primera consulta?", "Por lo general dura entre 45 y 60 minutos e incluye una valoración completa y explicación del plan recomendado."],
-  ["¿Aceptan seguros dentales?", "Trabajamos con reembolso según las condiciones de tu aseguradora. Te ayudamos con la documentación necesaria."],
-  ["¿El blanqueamiento dental daña el esmalte?", "Realizado bajo supervisión profesional, es un procedimiento seguro que no desgasta el esmalte."],
-  ["¿Cada cuánto debo ir a una limpieza dental?", "Recomendamos una limpieza cada seis meses, aunque la frecuencia puede variar según tu salud oral."],
-  ["¿Qué métodos de pago aceptan?", "Aceptamos efectivo, transferencia, tarjetas y pagos en línea mediante Stripe."],
-  ["¿Atienden emergencias dentales?", "Sí. Contáctanos por WhatsApp para valorar tu situación y ofrecerte el espacio disponible más cercano."],
+  ["¿Cómo solicito mi primera cita?", "La primera cita la puedes solicitar llamando al 2460 7923, escribiendo a nuestro WhatsApp 7013 7712 o por medio de nuestra página web."],
+  ["¿Cuánto dura una primera consulta?", "La primera consulta tiene una duración aproximada de 30 minutos. Iniciamos con la apertura del expediente para conocer más datos generales y de salud del paciente, continuamos con una revisión general y finalizamos con un plan de tratamiento para el paciente."],
+  ["¿Aceptan seguros dentales?", "Sí, aceptamos seguros dentales."],
+  ["¿Cada cuánto debo ir a una limpieza dental?", "En un paciente sano se recomienda una limpieza dental cada 6 meses. Sin embargo, este tiempo puede variar si presentas gingivitis o enfermedad periodontal."],
+  ["¿Qué métodos de pago aceptan?", "Aceptamos pagos en efectivo, SINPE, transferencia o tarjeta de crédito."],
+  ["¿Tienen financiamiento?", "Sí, contamos con financiamiento por parte de la clínica para la mayoría de nuestros tratamientos. Además, tenemos convenio con Club Bienestar de Coopelesca, con el que podrás financiar tu tratamiento y pagarlo mensualmente en tu recibo de electricidad."],
 ] as const;
 const inputClass = "h-12 border-primary/20 bg-background px-4 focus-visible:ring-primary";
 
@@ -908,15 +908,18 @@ function Location() {
               <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary"><Clock3 size={20} /></span>
               <div><p className="text-sm font-semibold text-ivory">Horario</p><p className="mt-1 text-sm leading-6 text-ivory/70">Lunes a viernes: 8:00 a. m.–5:30 p. m.<br />Sábado: 8:00 a. m.–12:00 p. m.<br />Domingo: cerrado</p></div>
             </div>
+            <div className="flex gap-4 border-t border-primary/15 pt-6">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary"><Phone size={20} /></span>
+              <div><p className="text-sm font-semibold text-ivory">Citas por llamada</p><p className="mt-1 select-none text-sm leading-6 text-ivory/70">2460 7923</p></div>
+            </div>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button variant="gold" size="lg" className="sm:flex-1" asChild><a href="https://www.google.com/maps/search/?api=1&query=Cl%C3%ADnica+Dental+Silo%C3%A9+Costa+Rica" target="_blank" rel="noopener noreferrer"><MapPin /> Cómo llegar</a></Button>
+            <Button variant="gold" size="lg" className="sm:flex-1" asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><MapPin /> Cómo llegar</a></Button>
             <Button variant="goldOutline" size="lg" className="text-ivory sm:flex-1" asChild><a href="tel:70137712"><Phone /> 7013 7712</a></Button>
           </div>
         </div>
         <div className="relative min-h-[320px] border-t border-primary/25 p-3 sm:p-4 lg:min-h-[500px] lg:border-l lg:border-t-0">
-          <span className="absolute left-6 top-6 z-10 rounded-full border border-primary/30 bg-ink/80 px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ivory/90 backdrop-blur-md">Cómo llegar</span>
-          <iframe title="Mapa de Clínica Dental Siloé" src="https://www.google.com/maps?q=Cl%C3%ADnica%20Dental%20Silo%C3%A9%20Costa%20Rica&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="h-[320px] w-full rounded-xl border border-primary/20 grayscale-[0.2] sm:h-[380px] lg:h-full lg:min-h-[468px]" />
+          <ClinicMap />
         </div>
       </div>
     </div>
@@ -977,4 +980,4 @@ function InstagramFeed() {
   </section>;
 }
 
-function Footer() { return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={getAssetUrl(logoAsset.url)} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover" /><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios", "#servicios"], ["Solicitar", "#agendar"], ["Reseñas", "#resenas"], ["Preguntas", "#faq"]].map(([l, h]) => <a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16} /> 7013 7712</a><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16} /> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16} /> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 max-w-7xl border-t border-ivory/10 pt-6 font-[system-ui,sans-serif] text-xs text-ivory/60"><nav aria-label="Información legal" className="flex flex-wrap gap-x-6 gap-y-3"><Link to="/aviso-legal" className="hover:text-primary">Aviso legal</Link><Link to="/politica-de-privacidad" className="hover:text-primary">Política de privacidad</Link><Link to="/politica-de-cookies" className="hover:text-primary">Política de cookies</Link></nav><p className="mt-5 leading-5">{SITE.name} se reserva el derecho de admisión. La información de este sitio es de carácter general y no sustituye la valoración de un profesional; los resultados pueden variar de una persona a otra. Enviar una solicitud no confirma la cita.</p><div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} {SITE.name}. Todos los derechos reservados.</span><span>Sonrisas que iluminan</span></div></div></footer> }
+function Footer() { return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={getAssetUrl(logoAsset.url)} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover" /><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios", "#servicios"], ["Solicitar", "#agendar"], ["Reseñas", "#resenas"], ["Preguntas", "#faq"]].map(([l, h]) => <a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16} /> 7013 7712</a><span className="flex select-none items-center gap-2"><Phone size={16} /> 2460 7923</span><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16} /> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16} /> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 max-w-7xl border-t border-ivory/10 pt-6 font-[system-ui,sans-serif] text-xs text-ivory/60"><nav aria-label="Información legal" className="flex flex-wrap gap-x-6 gap-y-3"><Link to="/aviso-legal" className="hover:text-primary">Aviso legal</Link><Link to="/politica-de-privacidad" className="hover:text-primary">Política de privacidad</Link><Link to="/politica-de-cookies" className="hover:text-primary">Política de cookies</Link></nav><p className="mt-5 leading-5">{SITE.name} se reserva el derecho de admisión. La información de este sitio es de carácter general y no sustituye la valoración de un profesional; los resultados pueden variar de una persona a otra. Enviar una solicitud no confirma la cita.</p><div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} {SITE.name}. Todos los derechos reservados.</span><span>Sonrisas que iluminan</span></div></div></footer> }

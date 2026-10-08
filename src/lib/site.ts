@@ -22,6 +22,13 @@ export const SITE = {
   lastUpdated: "6 de octubre de 2026",
 } as const;
 
+// Ubicación exacta de la clínica (Ciudad Quesada). Sale del enlace de Google Maps de la clínica.
+export const CLINIC_COORDS = { lat: 10.3391562, lng: -84.4348303 } as const;
+
+// Abre Google Maps con la ruta ya lista hacia la clínica; el punto de salida es la ubicación de la persona.
+export const DIRECTIONS_URL =
+  "https://www.google.com/maps/dir//Cl%C3%ADnica+Silo%C3%A9,+50+oeste+de+liceo+San+Carlos+y+200+sur,+Provincia+de+Alajuela,+Cd+Quesada,+Barrio+San+Roque,+21001/@10.3391562,-84.4348303,17z/data=!4m8!4m7!1m0!1m5!1m1!1s0x8fa06564fbcc10d9:0x43a7729e03db00ad!2m2!1d-84.4348303!2d10.3391562";
+
 export const FULL_ADDRESS = `${SITE.addressLine}, ${SITE.city}, ${SITE.region}, ${SITE.country}`;
 
 export const getAssetUrl = (url: string) =>

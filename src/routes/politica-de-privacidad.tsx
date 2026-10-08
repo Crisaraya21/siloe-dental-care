@@ -91,7 +91,7 @@ function PoliticaPrivacidad() {
         <ul>
           <li>Servicios de alojamiento y base de datos donde se guardan las solicitudes y opiniones.</li>
           <li>Servicio de correo electrónico para enviar las notificaciones de las citas.</li>
-          <li>Google, por el mapa de ubicación y las fuentes tipográficas.</li>
+          <li>Proveedores del mapa de ubicación (OpenStreetMap), de la librería que lo muestra (unpkg) y de las fuentes tipográficas (Google). Al cargar estos elementos reciben tu dirección IP.</li>
           <li>WhatsApp, Instagram y Google (reseñas), solo cuando tú eliges usar esos enlaces.</li>
         </ul>
         <p>También podremos entregar datos a autoridades cuando una ley o una orden judicial lo exijan.</p>

@@ -206,8 +206,111 @@ html, body { max-width: 100%; overflow-x: clip; }
 img, video, iframe { max-width: 100%; }
 a, button { -webkit-tap-highlight-color: transparent; }
 
+/* ---------- Mapa de la clínica: diente que llega a la ubicación ---------- */
+.siloe-tooth-marker { background: none; border: 0; }
+.tooth-pin { position: relative; width: 84px; height: 96px; cursor: pointer; }
+.tooth-body {
+  position: absolute;
+  left: 8px;
+  bottom: 6px;
+  width: 68px;
+  height: 77px;
+  opacity: 0;
+  transform: translateY(-320px) rotate(-16deg);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45));
+}
+.tooth-shadow {
+  position: absolute;
+  left: 50%;
+  top: 84px;
+  width: 42px;
+  height: 12px;
+  margin: -6px 0 0 -21px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  filter: blur(2px);
+  opacity: 0;
+  transform: scale(0.2);
+}
+.tooth-ring {
+  position: absolute;
+  left: 50%;
+  top: 84px;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scaleY(0.45) scale(0.3);
+}
+.tooth-pin.is-arriving .tooth-body { animation: tooth-drop 1.5s forwards; }
+.tooth-pin.is-arriving .tooth-shadow { animation: tooth-shadow 1.5s ease-out forwards; }
+.tooth-pin.is-arriving .tooth-ring { animation: tooth-ring 2.6s ease-out 0.8s infinite; }
+.tooth-pin.is-arriving .tooth-ring-2 { animation-delay: 2.1s; }
+
+@keyframes tooth-drop {
+  0% { opacity: 0; transform: translateY(-320px) rotate(-16deg); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.6); }
+  10% { opacity: 1; }
+  50% { opacity: 1; transform: translateY(0) rotate(4deg) scale(1, 1); animation-timing-function: ease-out; }
+  58% { transform: translateY(0) rotate(0) scale(1.14, 0.84); animation-timing-function: ease-out; }
+  74% { transform: translateY(-26px) rotate(-3deg) scale(0.97, 1.04); animation-timing-function: ease-in; }
+  88% { transform: translateY(0) rotate(0) scale(1.06, 0.94); animation-timing-function: ease-out; }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+@keyframes tooth-shadow {
+  0% { opacity: 0; transform: scale(0.2); }
+  50% { opacity: 0.7; transform: scale(1); }
+  74% { opacity: 0.35; transform: scale(0.65); }
+  88%, 100% { opacity: 0.7; transform: scale(1); }
+}
+@keyframes tooth-ring {
+  0% { opacity: 0.85; transform: scaleY(0.45) scale(0.3); }
+  100% { opacity: 0; transform: scaleY(0.45) scale(3.4); }
+}
+
+.siloe-map .leaflet-container { background: #1b1b1b; font-family: inherit; }
+/* Convierte el mapa claro de OpenStreetMap en uno oscuro con tono cálido. */
+.siloe-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.55) sepia(0.35); }
+.siloe-map .leaflet-bar { border: 1px solid color-mix(in oklab, var(--primary) 50%, transparent); box-shadow: none; }
+.siloe-map .leaflet-bar a {
+  background: rgba(31, 31, 31, 0.92);
+  color: var(--primary);
+  border-bottom-color: color-mix(in oklab, var(--primary) 35%, transparent);
+}
+.siloe-map .leaflet-bar a:hover { background: var(--primary); color: var(--ink); }
+.siloe-map .leaflet-container .leaflet-control-attribution { background: rgba(20, 20, 20, 0.78); color: rgba(250, 247, 240, 0.65); font-family: system-ui, sans-serif; font-size: 10px; }
+.siloe-map .leaflet-container .leaflet-control-attribution a { color: var(--gold-light); }
+.siloe-popup .leaflet-popup-content-wrapper {
+  background: #1f1f1f;
+  color: #faf7f0;
+  border: 1px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  border-radius: 0.9rem;
+  box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.7);
+}
+.siloe-popup .leaflet-popup-tip { background: #1f1f1f; }
+.siloe-popup .leaflet-popup-content { margin: 0.85rem 1rem; }
+.siloe-popup-body { display: flex; flex-direction: column; gap: 0.2rem; font-family: system-ui, sans-serif; }
+.siloe-popup-body strong { font-size: 0.95rem; color: var(--primary); }
+.siloe-popup-body span { font-size: 0.8rem; color: rgba(250, 247, 240, 0.7); }
+.siloe-popup .siloe-popup-body a {
+  margin-top: 0.55rem;
+  display: inline-block;
+  align-self: flex-start;
+  border-radius: 9999px;
+  background: var(--primary);
+  padding: 0.4rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+.siloe-popup .siloe-popup-body a:hover { background: var(--gold-light); color: var(--ink); }
+
 @media (prefers-reduced-motion: reduce) {
   .loading-bar::after { animation: none !important; width: 100%; opacity: 0.6; }
   html { scroll-behavior: auto; }
+  .tooth-body { opacity: 1; transform: none; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
