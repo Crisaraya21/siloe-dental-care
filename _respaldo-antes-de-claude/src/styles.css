@@ -180,34 +180,7 @@
 @keyframes soft-ping { 75%, 100% { transform: scale(1.65); opacity: 0; } }
 @utility animate-soft-ping { animation: soft-ping 1.8s cubic-bezier(0,0,.2,1) infinite; }
 
-/* Barra de carga indeterminada: le indica a la persona que la página sigue trabajando. */
-@keyframes loading-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(300%); } }
-.loading-bar {
-  position: relative;
-  height: 4px;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 9999px;
-  background: color-mix(in oklab, var(--primary) 22%, transparent);
-}
-.loading-bar::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 35%;
-  border-radius: inherit;
-  background: var(--primary);
-  animation: loading-slide 1.3s ease-in-out infinite;
-}
-
-/* Evita que el contenido se salga de la pantalla en celulares angostos. */
-html, body { max-width: 100%; overflow-x: clip; }
-img, video, iframe { max-width: 100%; }
-a, button { -webkit-tap-highlight-color: transparent; }
-
 @media (prefers-reduced-motion: reduce) {
-  .loading-bar::after { animation: none !important; width: 100%; opacity: 0.6; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

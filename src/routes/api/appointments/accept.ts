@@ -76,7 +76,7 @@ export const Route = createFileRoute("/api/appointments/accept")({
           );
         }
 
-        const whatsappMessage = `Hola ${appointment.name} 👋
+        const whatsappMessage = `Hola ${appointment.name}
       Le confirmamos su cita en Clínica Dental Siloé:
 
       Servicio: ${appointment.service}

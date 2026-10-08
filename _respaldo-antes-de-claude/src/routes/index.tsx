@@ -1,11 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import {
   ArrowRight, ArrowUp, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Clock3,
-  ExternalLink, HeartHandshake, Info, Instagram, LoaderCircle, MapPin, Menu, MessageCircle, Phone,
+  ExternalLink, HeartHandshake, Info, Instagram, MapPin, Menu, MessageCircle, Phone,
   Star, X,
 } from "lucide-react";
-import { BOOKING_HOURS_WEEKDAY, SITE, getBookingHoursForDate, priceInquiryLink } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,49 +41,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Clínica Dental Siloé" },
       { property: "og:description", content: "Tu sonrisa es la luz de tu historia. Solicita tu cita en línea." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: SITE.url },
-      { property: "og:image", content: heroImage },
       { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: `${SITE.url}/` }],
-    // Datos estructurados para que Google entienda que es una clínica dental local.
-    // No se incluyen estrellas ni calificaciones propias: Google no las acepta como reseñas válidas.
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Dentist",
-          name: SITE.name,
-          url: SITE.url,
-          image: heroImage,
-          email: SITE.email,
-          telephone: `+${SITE.phoneIntl.slice(0, 3)} ${SITE.phoneIntl.slice(3, 7)} ${SITE.phoneIntl.slice(7)}`,
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: SITE.addressLine,
-            addressLocality: SITE.city,
-            addressRegion: SITE.region,
-            addressCountry: "CR",
-          },
-          openingHoursSpecification: [
-            {
-              "@type": "OpeningHoursSpecification",
-              dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-              opens: "08:00",
-              closes: "17:30",
-            },
-            {
-              "@type": "OpeningHoursSpecification",
-              dayOfWeek: "Saturday",
-              opens: "08:00",
-              closes: "12:00",
-            },
-          ],
-          sameAs: [SITE.instagramUrl],
-        }),
-      },
-    ],
+    ]
   }),
   component: Home,
 });
@@ -108,9 +66,7 @@ const GOOGLE_PLACE_ID = "ChIJ2RDM-2RloI8RrQDbA55yp0M";
 const GOOGLE_REVIEW_URL = `https://search.google.com/local/writereview?placeid=${GOOGLE_PLACE_ID}`;
 const REVIEW_PENDING_KEY = "siloe-google-review-pending";
 const REVIEW_REMINDER_SHOWN_KEY = "siloe-google-review-reminder-shown";
-const REQUEST_TIMEOUT_MS = 30000;
-const REVIEW_COOLDOWN_KEY = "siloe-review-last-sent";
-const REVIEW_COOLDOWN_MS = 60_000;
+const HOURS = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
 const NAV_ITEMS = [
   ["Inicio", "#inicio"],
   ["Servicios", "#servicios"],
@@ -121,10 +77,8 @@ const NAV_ITEMS = [
 const CLINIC_SCHEDULE = {
   timeZone: "America/Costa_Rica",
   opensAtMinutes: 8 * 60,
-  // Hora de cierre por día, empezando en domingo (0 = cerrado):
-  // lunes a viernes 5:30 pm, sábado 12:00 md.
-  closesAtMinutesByDay: [0, 17 * 60 + 30, 17 * 60 + 30, 17 * 60 + 30, 17 * 60 + 30, 17 * 60 + 30, 12 * 60],
-} as const;
+  closesAtMinutes: 17 * 60,
+};
 const FAQS = [
   ["¿Cómo solicito mi primera cita?", "Completa el formulario de tres pasos o escríbenos por WhatsApp. Te contactaremos para confirmar disponibilidad."],
   ["¿Cuánto dura una primera consulta?", "Por lo general dura entre 45 y 60 minutos e incluye una valoración completa y explicación del plan recomendado."],
@@ -153,11 +107,10 @@ function getClinicStatus(now = new Date()) {
   const getPart = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(getPart("weekday"));
   const currentMinutes = Number(getPart("hour")) * 60 + Number(getPart("minute"));
-  const closesAtMinutes = CLINIC_SCHEDULE.closesAtMinutesByDay[weekday] ?? 0;
-  const isOpenDay = closesAtMinutes > 0;
+  const isOpenDay = weekday >= 1 && weekday <= 6;
 
-  if (isOpenDay && currentMinutes >= CLINIC_SCHEDULE.opensAtMinutes && currentMinutes < closesAtMinutes) {
-    return { isOpen: true, message: `Abierto hoy hasta las ${formatClinicTime(closesAtMinutes)}` };
+  if (isOpenDay && currentMinutes >= CLINIC_SCHEDULE.opensAtMinutes && currentMinutes < CLINIC_SCHEDULE.closesAtMinutes) {
+    return { isOpen: true, message: `Abierto hoy hasta las ${formatClinicTime(CLINIC_SCHEDULE.closesAtMinutes)}` };
   }
 
   if (isOpenDay && currentMinutes < CLINIC_SCHEDULE.opensAtMinutes) {
@@ -292,7 +245,7 @@ function Home() {
     };
   }, [heroRef]);
   const go = (id: string) => { setMenuOpen(false); document.querySelector(id)?.scrollIntoView({ behavior: "smooth" }); };
-  return <main id="inicio" className="min-h-screen overflow-x-clip bg-ink text-foreground">
+  return <main id="inicio" className="min-h-screen bg-ink text-foreground">
     <div aria-hidden="true" className="fixed inset-x-0 top-0 z-50 h-0.5 bg-transparent"><span className="block h-full origin-left bg-primary motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-out motion-reduce:transition-none" style={{ transform: `scaleX(${scrollProgress})` }} /></div>
     <header className={`fixed inset-x-0 top-0 z-40 ${scrolled || menuOpen ? "border-b border-primary/20 bg-ink/90 backdrop-blur-xl" : "bg-transparent"}`}>
       <div className={`mx-auto flex ${scrolled || menuOpen ? "h-16" : "h-20"} max-w-7xl items-center justify-between px-5 sm:px-8`}>
@@ -318,13 +271,13 @@ function Home() {
         <h1 className={`${revealClass(heroInView)} max-w-2xl text-4xl font-semibold leading-[1.08] text-ivory sm:text-6xl lg:text-7xl`} style={{ transitionDelay: "0ms" }}>Tu sonrisa es <span className="block text-primary">la luz de tu historia</span></h1>
         {clinicStatus.message && <p role="status" aria-live="polite" className={`${revealClass(heroInView)} mt-4 flex items-center gap-2 font-[system-ui,sans-serif] text-sm text-ivory/65`} style={{ transitionDelay: "70ms" }}><span aria-hidden="true" className={`size-2 rounded-full ${clinicStatus.isOpen ? "bg-emerald-400" : "bg-primary/70"}`} />{clinicStatus.message}</p>}
         <div className={`${revealClass(heroInView)} mt-8 flex flex-wrap gap-3 font-[system-ui,sans-serif]`} style={{ transitionDelay: "140ms" }}><Button variant="gold" size="lg" className="h-12 rounded-full bg-none bg-primary px-6 shadow-sm shadow-black/15 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-gold-light hover:brightness-100 hover:shadow-md motion-reduce:transition-none motion-reduce:transform-none" onClick={() => go("#agendar")}><CalendarDays /> Solicitar Cita</Button><Button variant="goldOutline" size="lg" className="h-12 rounded-full border-ivory/25 px-6 text-ivory shadow-sm shadow-black/10 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/40 hover:bg-ivory/5 hover:shadow-md motion-reduce:transition-none motion-reduce:transform-none" onClick={() => go("#servicios")}>Nuestros Servicios</Button></div>
-        <div className={`${revealClass(heroInView)} mt-10 grid max-w-xl grid-cols-3 gap-4 font-[system-ui,sans-serif]`} style={{ transitionDelay: "210ms" }}>{[["+13", "Años de experiencia"], ["+5.000", "Sonrisas transformadas"], ["100%", "Trato humano"]].map(([n, l]) => <div key={n}><strong className="text-xl font-semibold text-primary sm:text-2xl">{n}</strong><span className="mt-1 block text-[0.7rem] leading-4 text-ivory/55">{l}</span></div>)}</div>
+        <div className={`${revealClass(heroInView)} mt-10 grid max-w-xl grid-cols-3 gap-4 font-[system-ui,sans-serif]`} style={{ transitionDelay: "210ms" }}>{[["+15", "Años de experiencia"], ["+5.000", "Sonrisas transformadas"], ["100%", "Trato humano"]].map(([n, l]) => <div key={n}><strong className="text-xl font-semibold text-primary sm:text-2xl">{n}</strong><span className="mt-1 block text-[0.7rem] leading-4 text-ivory/55">{l}</span></div>)}</div>
       </div>
       </div>
     </section>
 
     <section ref={servicesRef} id="servicios" className="bg-ivory py-24 sm:py-28"><SectionTitle eyebrow="Nuestros servicios" title="Un atelier dental al servicio de tu bienestar" subtitle="Cada tratamiento se diseña a la medida de tus necesidades, con materiales premium y un enfoque humano." />
-      <div className="mx-auto mt-14 grid max-w-7xl gap-6 px-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">{SERVICES.map((s, index) => <article key={s.title} style={{ transitionDelay: `${servicesInView ? index * 60 : 0}ms` }} className={`group flex overflow-hidden rounded-2xl border border-ink/5 bg-background shadow-sm transition-transform duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold motion-reduce:transform-none motion-reduce:transition-none ${revealClass(servicesInView)}`}><div className="flex w-full flex-col"><div className="relative h-44 overflow-hidden"><img src={s.image} alt={s.title} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none" /></div><div className="flex flex-1 flex-col p-6"><h3 className="text-xl text-ink">{s.title}</h3><p className="mt-2 flex-1 text-sm leading-6 text-ink/60">{s.desc}</p><div className="mt-5 flex justify-end border-t border-ink/10 pt-4"><Button variant="ghost" size="sm" className="px-2 text-ink hover:text-primary" onClick={() => setActiveService(s)}><Info /> Ver ficha</Button></div></div></div></article>)}</div>
+      <div className="mx-auto mt-14 grid max-w-7xl gap-6 px-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">{SERVICES.map((s, index) => <article key={s.title} style={{ transitionDelay: `${servicesInView ? index * 60 : 0}ms` }} className={`group flex overflow-hidden rounded-2xl border border-ink/5 bg-background shadow-sm transition-transform duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-gold motion-reduce:transform-none motion-reduce:transition-none ${revealClass(servicesInView)}`}><div className="flex w-full flex-col"><div className="relative h-44 overflow-hidden"><img src={s.image} alt={s.title} className="h-full w-full object-cover transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none" /></div><div className="flex flex-1 flex-col p-6"><h3 className="text-xl text-ink">{s.title}</h3><p className="mt-2 flex-1 text-sm leading-6 text-ink/60">{s.desc}</p><div className="mt-5 flex justify-end border-t border-ink/10 pt-4"><Button variant="ghost" size="sm" className="px-2 text-ink hover:text-primary" onClick={() => setActiveService(s)}><Info /> Ver ficha</Button></div></div></div></article>)}</div>
     </section>
 
     <Booking />
@@ -337,7 +290,7 @@ function Home() {
     <Button type="button" variant="gold" size="icon" aria-label="Volver arriba" tabIndex={showBackToTop ? 0 : -1} aria-hidden={!showBackToTop} onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })} className={`fixed bottom-24 right-5 z-40 rounded-full bg-none bg-primary shadow-sm shadow-black/15 transition-[transform,opacity] duration-200 ease-out hover:bg-gold-light motion-reduce:transition-none ${showBackToTop ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"}`}>
       <ArrowUp />
     </Button>
-    <Dialog open={Boolean(activeService)} onOpenChange={open => !open && setActiveService(null)}><DialogContent className="max-h-[90svh] overflow-y-auto rounded-2xl border-primary/25 p-0 sm:max-w-2xl">{activeService && <><img src={activeService.image} alt={activeService.title} className="h-48 w-full object-cover sm:h-64" /><div className="p-5 sm:p-9"><DialogTitle className="pr-6 font-heading text-2xl leading-tight text-ink sm:text-3xl">{activeService.title}</DialogTitle><DialogDescription className="mt-4 text-base leading-7 text-ink/65">{activeService.fullDesc}</DialogDescription><div className="mt-7 flex flex-col gap-3 sm:flex-row"><Button variant="gold" size="lg" className="w-full rounded-full sm:flex-1" onClick={() => { setActiveService(null); setTimeout(() => go("#agendar"), 150); }}>Solicitar este servicio <ArrowRight /></Button><Button variant="goldOutline" size="lg" className="w-full rounded-full text-gold-muted sm:flex-1" asChild><a href={priceInquiryLink(activeService.title)} target="_blank" rel="noopener noreferrer" aria-label={`Consultar el precio de ${activeService.title} por WhatsApp (se abre en una pestaña nueva)`}><MessageCircle /> Consultar precio</a></Button></div></div></>}</DialogContent></Dialog>
+    <Dialog open={Boolean(activeService)} onOpenChange={open => !open && setActiveService(null)}><DialogContent className="max-h-[90vh] overflow-y-auto border-primary/25 p-0 sm:max-w-2xl sm:rounded-2xl">{activeService && <><img src={activeService.image} alt={activeService.title} className="h-64 w-full object-cover" /><div className="p-7 sm:p-9"><DialogTitle className="font-heading text-3xl text-ink">{activeService.title}</DialogTitle><DialogDescription className="mt-4 text-base leading-7 text-ink/65">{activeService.fullDesc}</DialogDescription><Button variant="gold" size="lg" className="mt-7 w-full rounded-full" onClick={() => { setActiveService(null); setTimeout(() => go("#agendar"), 150); }}>Solicitar este servicio <ArrowRight /></Button></div></>}</DialogContent></Dialog>
   </main>;
 }
 
@@ -347,9 +300,7 @@ function Booking() {
   const [step, setStep] = useState(1), [service, setService] = useState(""), [date, setDate] = useState(""), [time, setTime] = useState(""), [sent, setSent] = useState(false), [loading, setLoading] = useState(false), [error, setError] = useState("");
   const [fields, setFields] = useState({ name: "", phone: "", email: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, email: false });
-  // Momento en que la persona llegó al paso de datos; sirve para detectar envíos automáticos demasiado rápidos.
-  const formStartedAt = useRef(0);
-  const today =new Intl.DateTimeFormat("en-CA", { timeZone: "America/Costa_Rica", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Costa_Rica", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   const fieldStatus = (key: keyof typeof fields) => {
     const value = fields[key].trim();
     const shouldValidate = touched[key] || value.length > 0;
@@ -362,13 +313,6 @@ function Booking() {
   };
   function updateField(key: keyof typeof fields, value: string) {
     setFields((current) => ({ ...current, [key]: value }));
-  }
-  // Las horas disponibles cambian según el día: sábado solo en la mañana y domingo cerrado.
-  const hoursForDate = date ? getBookingHoursForDate(date) : BOOKING_HOURS_WEEKDAY;
-  const dateIsClosed = Boolean(date) && hoursForDate.length === 0;
-  function changeDate(value: string) {
-    setDate(value);
-    if (time && !getBookingHoursForDate(value).includes(time)) setTime("");
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -384,75 +328,31 @@ function Booking() {
       setError("Revisa los campos marcados antes de continuar.");
       return;
     }
-    if (loading) return;
     setLoading(true);
     setError("");
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      const response = await fetch("/api/appointments", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          name: form.get("name"),
-          phone: form.get("phone"),
-          email: form.get("email"),
-          service,
-          preferredDate: date,
-          preferredTime: time,
-          message: form.get("message"),
-          website: form.get("website_url"),
-          startedAt: formStartedAt.current,
-        }),
-      });
-      if (!response.ok) {
-        let serverMessage = "";
-        try {
-          const data = await response.json();
-          serverMessage = typeof data?.error === "string" ? data.error : "";
-        } catch {
-          // Si la respuesta no es JSON usamos el mensaje general.
-        }
-        setError(serverMessage || "No pudimos enviar la solicitud. Inténtalo de nuevo o contáctanos por WhatsApp.");
-        return;
-      }
+      const response = await fetch("/api/appointments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: form.get("name"), phone: form.get("phone"), email: form.get("email"), service, preferredDate: date, preferredTime: time, message: form.get("message") }) });
+      if (!response.ok) throw new Error("appointment request failed");
       setSent(true);
     } catch {
-      setError(
-        controller.signal.aborted
-          ? "La solicitud está tardando demasiado. Revisa tu conexión e inténtalo de nuevo, o contáctanos por WhatsApp."
-          : "No pudimos enviar la solicitud. Inténtalo de nuevo o contáctanos por WhatsApp.",
-      );
+      setError("No pudimos enviar la solicitud. Inténtalo de nuevo o contáctanos por WhatsApp.");
     } finally {
-      window.clearTimeout(timeout);
       setLoading(false);
     }
   }
   return <section id="agendar" className="bg-ink py-24 sm:py-28"><SectionTitle dark eyebrow="Solicita tu cita" title="Solicita en tres pasos" subtitle="Selecciona el servicio, elige fecha y hora, y déjanos tus datos. Te contactaremos para confirmar." /><div className="mx-auto mt-14 max-w-4xl px-5 sm:px-8"><div className="rounded-2xl border border-primary/25 bg-ivory/5 p-6 sm:p-10">
-    {sent ? <div role="status" aria-live="polite" className="py-12 text-center"><span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-ink"><Check size={30} /></span><h3 className="mt-6 text-3xl text-ivory">Solicitud recibida</h3><p className="mx-auto mt-3 max-w-md text-ivory/60">Gracias. Te contactaremos pronto para confirmar el día y la hora de tu cita.</p><Button variant="goldOutline" className="mt-7 rounded-full" onClick={() => { setSent(false); setStep(1); setService(""); setDate(""); setTime(""); formStartedAt.current = 0; }}>Solicitar otra cita</Button></div> : <>
+    {sent ? <div className="py-12 text-center"><span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-ink"><Check size={30} /></span><h3 className="mt-6 text-3xl text-ivory">Solicitud recibida</h3><p className="mx-auto mt-3 max-w-md text-ivory/60">Gracias. Te contactaremos pronto para confirmar el día y la hora de tu cita.</p><Button variant="goldOutline" className="mt-7 rounded-full" onClick={() => { setSent(false); setStep(1); setService(""); setDate(""); setTime(""); }}>Solicitar otra cita</Button></div> : <>
       <div className="mx-auto mb-10 flex max-w-xs items-center">{[1, 2, 3].map((n, i) => <div key={n} className="contents"><span className={`grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold ${step >= n ? "bg-primary text-ink" : "bg-ivory/10 text-ivory/40"}`}>{n}</span>{i < 2 && <span className={`h-px flex-1 ${step > n ? "bg-primary" : "bg-ivory/10"}`} />}</div>)}</div>
-      {step === 1 && <div><h3 className="mb-7 text-center text-2xl text-ivory">¿Qué servicio necesitas?</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{SERVICES.map(s => <Button key={s.title} variant="ghost" className={`h-auto min-h-14 justify-start whitespace-normal border px-5 py-3 text-left text-ivory ${service === s.title ? "border-primary bg-primary/15 text-primary" : "border-ivory/15 hover:border-primary/50 hover:bg-ivory/5"}`} onClick={() => setService(s.title)}>{service === s.title && <Check />}{s.title}</Button>)}</div><div className="mt-8 flex justify-end"><Button variant="gold" size="lg" disabled={!service} onClick={() => setStep(2)}>Continuar <ChevronRight /></Button></div></div>}
-      {step === 2 && <div><h3 className="mb-7 text-center text-2xl text-ivory">Elige fecha y hora</h3><div className="mx-auto grid max-w-xl gap-5 sm:grid-cols-2"><label className="text-sm text-ivory/70">Fecha<Input type="date" min={today} value={date} onChange={e => changeDate(e.target.value)} aria-invalid={dateIsClosed} className="mt-2 h-12 border-ivory/20 bg-ivory/5 text-ivory [color-scheme:dark]" /></label><label className="text-sm text-ivory/70">Hora<select value={time} onChange={e => setTime(e.target.value)} disabled={dateIsClosed} className="mt-2 h-12 w-full rounded-md border border-ivory/20 bg-ink px-4 text-ivory outline-none focus:border-primary disabled:opacity-50"><option value="">Seleccionar</option>{hoursForDate.map(h => <option key={h}>{h}</option>)}</select></label></div>{dateIsClosed && <p role="alert" className="mx-auto mt-4 max-w-xl text-sm text-destructive">Los domingos la clínica está cerrada. Elige otro día.</p>}{date && !dateIsClosed && !time && <p className="mx-auto mt-4 max-w-xl text-xs text-ivory/55">{new Date(`${date}T12:00:00Z`).getUTCDay() === 6 ? "Los sábados atendemos de 8:00 a. m. a 12:00 p. m." : "De lunes a viernes atendemos de 8:00 a. m. a 5:30 p. m."}</p>}<div className="mt-8 flex justify-between"><Button variant="ghost" className="text-ivory" onClick={() => setStep(1)}><ChevronLeft /> Atrás</Button><Button variant="gold" size="lg" disabled={!date || !time} onClick={() => { if (!formStartedAt.current) formStartedAt.current = Date.now(); setStep(3); }}>Continuar <ChevronRight /></Button></div></div>}
-      {step === 3 && <form onSubmit={submit} aria-busy={loading} className="relative"><h3 className="mb-7 text-center text-2xl text-ivory">Cuéntanos cómo contactarte</h3><fieldset disabled={loading} className="m-0 min-w-0 border-0 p-0"><Honeypot name="website_url" /><div className="grid gap-4 sm:grid-cols-2">
+      {step === 1 && <div><h3 className="mb-7 text-center text-2xl text-ivory">¿Qué servicio necesitas?</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{SERVICES.map(s => <Button key={s.title} variant="ghost" className={`h-14 justify-start border px-5 text-left text-ivory ${service === s.title ? "border-primary bg-primary/15 text-primary" : "border-ivory/15 hover:border-primary/50 hover:bg-ivory/5"}`} onClick={() => setService(s.title)}>{service === s.title && <Check />}{s.title}</Button>)}</div><div className="mt-8 flex justify-end"><Button variant="gold" size="lg" disabled={!service} onClick={() => setStep(2)}>Continuar <ChevronRight /></Button></div></div>}
+      {step === 2 && <div><h3 className="mb-7 text-center text-2xl text-ivory">Elige fecha y hora</h3><div className="mx-auto grid max-w-xl gap-5 sm:grid-cols-2"><label className="text-sm text-ivory/70">Fecha<Input type="date" min={today} value={date} onChange={e => setDate(e.target.value)} className="mt-2 h-12 border-ivory/20 bg-ivory/5 text-ivory [color-scheme:dark]" /></label><label className="text-sm text-ivory/70">Hora<select value={time} onChange={e => setTime(e.target.value)} className="mt-2 h-12 w-full rounded-md border border-ivory/20 bg-ink px-4 text-ivory outline-none focus:border-primary"><option value="">Seleccionar</option>{HOURS.map(h => <option key={h}>{h}</option>)}</select></label></div><div className="mt-8 flex justify-between"><Button variant="ghost" className="text-ivory" onClick={() => setStep(1)}><ChevronLeft /> Atrás</Button><Button variant="gold" size="lg" disabled={!date || !time} onClick={() => setStep(3)}>Continuar <ChevronRight /></Button></div></div>}
+      {step === 3 && <form onSubmit={submit}><h3 className="mb-7 text-center text-2xl text-ivory">Cuéntanos cómo contactarte</h3><div className="grid gap-4 sm:grid-cols-2">
         <BookingField id="booking-name" name="name" label="Nombre completo *" required value={fields.name} status={fieldStatus("name")} onValueChange={(value) => updateField("name", value)} onBlur={() => setTouched((current) => ({ ...current, name: true }))} />
         <BookingField id="booking-phone" name="phone" label="Teléfono *" required value={fields.phone} status={fieldStatus("phone")} onValueChange={(value) => updateField("phone", value)} onBlur={() => setTouched((current) => ({ ...current, phone: true }))} />
         <BookingField id="booking-email" name="email" label="Correo electrónico" type="email" value={fields.email} status={fieldStatus("email")} onValueChange={(value) => updateField("email", value)} onBlur={() => setTouched((current) => ({ ...current, email: true }))} className="sm:col-span-2" />
         <Textarea name="message" placeholder="Mensaje o detalle adicional" className="min-h-28 border-ivory/20 bg-ivory/5 p-4 text-ivory placeholder:text-ivory/40 sm:col-span-2" />
-      </div></fieldset>
-      {loading && <div role="status" aria-live="polite" className="mt-6 rounded-xl border border-primary/30 bg-primary/10 p-4"><div className="flex items-center gap-3 text-sm text-ivory"><LoaderCircle className="size-5 shrink-0 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" /><span>Enviando tu solicitud. Puede tardar unos segundos, por favor no cierres la página.</span></div><div className="loading-bar mt-4" aria-hidden="true" /></div>}
-      {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}<div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between"><Button type="button" variant="ghost" className="text-ivory" disabled={loading} onClick={() => setStep(2)}><ChevronLeft /> Atrás</Button><Button type="submit" variant="gold" size="lg" disabled={loading} aria-disabled={loading}>{loading ? <><LoaderCircle className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> Enviando…</> : <>Enviar solicitud <ArrowRight /></>}</Button></div></form>}
+      </div>{error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}<div className="mt-8 flex justify-between"><Button type="button" variant="ghost" className="text-ivory" onClick={() => setStep(2)}><ChevronLeft /> Atrás</Button><Button type="submit" variant="gold" size="lg" disabled={loading}>{loading ? "Enviando…" : "Enviar solicitud"} <ArrowRight /></Button></div></form>}
     </>}
   </div></div></section>;
-}
-
-// Campo trampa: las personas no lo ven, pero los programas que llenan formularios sí lo llenan.
-function Honeypot({ name, value, onChange }: { name: string; value?: string; onChange?: (value: string) => void }) {
-  return <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden" }}>
-    <label>No llenes este campo
-      <input type="text" name={name} tabIndex={-1} autoComplete="off" {...(onChange ? { value: value ?? "", onChange: (event) => onChange(event.target.value) } : {})} />
-    </label>
-  </div>;
 }
 
 function BookingField({ id, name, label, type = "text", required = false, value, status, onValueChange, onBlur, className = "" }: { id: string; name: string; label: string; type?: "text" | "email"; required?: boolean; value: string; status: { state: "idle" | "valid" | "invalid"; message: string }; onValueChange: (value: string) => void; onBlur: () => void; className?: string }) {
@@ -507,7 +407,6 @@ function Reviews() {
   const [reviewerName, setReviewerName] = useState("");
   const [copyNotice, setCopyNotice] = useState("");
   const [error, setError] = useState("");
-  const [honey, setHoney] = useState("");
   const [savingReview, setSavingReview] = useState(false);
   const savingReviewRef = useRef(false);
   const reviewSavedRef = useRef(false);
@@ -602,21 +501,6 @@ function Reviews() {
   async function saveReviewOnce(nameValue: string, textValue: string) {
     if (reviewSavedRef.current) return true;
     if (savingReviewRef.current) return false;
-    // Campo trampa lleno: es un programa automático. Fingimos que todo salió bien y no guardamos nada.
-    if (honey) {
-      reviewSavedRef.current = true;
-      return true;
-    }
-    // Freno anti-spam: una opinión por minuto desde el mismo navegador.
-    try {
-      const last = Number(localStorage.getItem(REVIEW_COOLDOWN_KEY) ?? 0);
-      if (last && Date.now() - last < REVIEW_COOLDOWN_MS) {
-        setError("Ya enviaste una opinión hace un momento. Espera un minuto e inténtalo de nuevo.");
-        return false;
-      }
-    } catch {
-      // Sin almacenamiento disponible no hay freno local; el servidor sigue aplicando sus reglas.
-    }
 
     savingReviewRef.current = true;
     setSavingReview(true);
@@ -640,11 +524,6 @@ function Reviews() {
       if (!data) throw new Error("No se recibió la reseña guardada.");
 
       reviewSavedRef.current = true;
-      try {
-        localStorage.setItem(REVIEW_COOLDOWN_KEY, String(Date.now()));
-      } catch {
-        // No pasa nada si el navegador no deja guardar el freno.
-      }
       addReviewToList(data);
       return true;
     } catch {
@@ -765,7 +644,6 @@ function Reviews() {
               <h3 className="text-center text-2xl text-ink">Cuéntanos directamente</h3>
               <p className="mt-2 text-center text-sm leading-6 text-ink/55">Este mensaje se comparte únicamente con la clínica.</p>
               <div className="mt-6 space-y-4">
-                <Honeypot name="website_url" value={honey} onChange={setHoney} />
                 <Input name="name" maxLength={120} placeholder="Tu nombre (opcional)" className={inputClass} />
                 <Textarea name="text" maxLength={2000} placeholder="Tu mensaje (opcional)" className="min-h-28 border-primary/20 bg-background p-4 focus-visible:ring-primary" />
               </div>
@@ -788,7 +666,6 @@ function Reviews() {
               <Input id="google-review-name" value={reviewerName} onChange={(event) => setReviewerName(event.target.value)} maxLength={120} placeholder="Tu nombre" className="mt-2 border-primary/20 bg-background focus-visible:ring-primary" />
               <label htmlFor="google-review-draft" className="mt-4 block text-left text-sm font-medium text-ink">Escribe tu opinión (opcional)</label>
               <Textarea id="google-review-draft" value={reviewDraft} onChange={(event) => setReviewDraft(event.target.value)} maxLength={2000} className="mt-2 min-h-28 border-primary/20 bg-background p-4 focus-visible:ring-primary" />
-              <Honeypot name="website_url" value={honey} onChange={setHoney} />
               {error && <p role="alert" className="mt-3 text-left text-sm text-destructive">{error}</p>}
               <Button type="button" variant="gold" size="lg" className="mt-5 h-14 w-full rounded-full text-base" disabled={savingReview} onClick={(event) => void publishAndShare(event)}>
                 {savingReview ? "Guardando…" : <>Publicar y compartir en Google <ExternalLink /></>}
@@ -802,9 +679,9 @@ function Reviews() {
           ) : (
             <div className="py-4 text-center">
               <h3 className="text-2xl text-ink">¿Cómo fue tu experiencia?</h3>
-              <div className="my-6 flex justify-center gap-1 sm:gap-2" role="group" aria-label="Califica tu experiencia de una a cinco estrellas" onMouseLeave={() => setHover(0)}>
+              <div className="my-6 flex justify-center gap-2" role="group" aria-label="Califica tu experiencia de una a cinco estrellas" onMouseLeave={() => setHover(0)}>
                 {[1, 2, 3, 4, 5].map((value) => (
-                  <Button key={value} type="button" variant="ghost" size="icon" aria-pressed={rating === value || ratingPreview === value} aria-label={`${value} ${value === 1 ? "estrella" : "estrellas"}`} onMouseEnter={() => setHover(value)} onClick={() => selectRating(value)} className="size-10 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary sm:size-12">
+                  <Button key={value} type="button" variant="ghost" size="icon" aria-pressed={rating === value || ratingPreview === value} aria-label={`${value} ${value === 1 ? "estrella" : "estrellas"}`} onMouseEnter={() => setHover(value)} onClick={() => selectRating(value)} className="size-12 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary">
                     <Star size={32} strokeWidth={1.7} style={{ transitionDelay: ratingPreview ? `${(value - 1) * 24}ms` : "0ms" }} className={`transition-transform duration-150 ease-out motion-reduce:transition-none ${value <= (hover || ratingPreview || rating) ? "scale-105 fill-primary text-primary" : "scale-100 text-ink/35"}`} />
                   </Button>
                 ))}
@@ -906,11 +783,11 @@ function Location() {
             </div>
             <div className="flex gap-4 border-t border-primary/15 pt-6">
               <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary"><Clock3 size={20} /></span>
-              <div><p className="text-sm font-semibold text-ivory">Horario</p><p className="mt-1 text-sm leading-6 text-ivory/70">Lunes a viernes: 8:00 a. m.–5:30 p. m.<br />Sábado: 8:00 a. m.–12:00 p. m.<br />Domingo: cerrado</p></div>
+              <div><p className="text-sm font-semibold text-ivory">Horario</p><p className="mt-1 text-sm leading-6 text-ivory/70">Lun–Vie: 9:00–18:00<br />Sáb: 9:00–13:00<br />Domingo: cerrado</p></div>
             </div>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button variant="gold" size="lg" className="sm:flex-1" asChild><a href="https://www.google.com/maps/search/?api=1&query=Cl%C3%ADnica+Dental+Silo%C3%A9+Costa+Rica" target="_blank" rel="noopener noreferrer"><MapPin /> Cómo llegar</a></Button>
+            <Button variant="gold" size="lg" className="sm:flex-1" asChild><a href="https://www.google.com/maps/search/?api=1&query=Cl%C3%ADnica+Dental+Silo%C3%A9+Costa+Rica" target="_blank" rel="noreferrer"><MapPin /> Cómo llegar</a></Button>
             <Button variant="goldOutline" size="lg" className="text-ivory sm:flex-1" asChild><a href="tel:70137712"><Phone /> 7013 7712</a></Button>
           </div>
         </div>
@@ -977,4 +854,4 @@ function InstagramFeed() {
   </section>;
 }
 
-function Footer() { return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={getAssetUrl(logoAsset.url)} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover" /><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios", "#servicios"], ["Solicitar", "#agendar"], ["Reseñas", "#resenas"], ["Preguntas", "#faq"]].map(([l, h]) => <a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16} /> 7013 7712</a><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16} /> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16} /> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 max-w-7xl border-t border-ivory/10 pt-6 font-[system-ui,sans-serif] text-xs text-ivory/60"><nav aria-label="Información legal" className="flex flex-wrap gap-x-6 gap-y-3"><Link to="/aviso-legal" className="hover:text-primary">Aviso legal</Link><Link to="/politica-de-privacidad" className="hover:text-primary">Política de privacidad</Link><Link to="/politica-de-cookies" className="hover:text-primary">Política de cookies</Link></nav><p className="mt-5 leading-5">{SITE.name} se reserva el derecho de admisión. La información de este sitio es de carácter general y no sustituye la valoración de un profesional; los resultados pueden variar de una persona a otra. Enviar una solicitud no confirma la cita.</p><div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} {SITE.name}. Todos los derechos reservados.</span><span>Sonrisas que iluminan</span></div></div></footer> }
+function Footer() { return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={getAssetUrl(logoAsset.url)} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover" /><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios", "#servicios"], ["Solicitar", "#agendar"], ["Reseñas", "#resenas"], ["Preguntas", "#faq"]].map(([l, h]) => <a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16} /> 7013 7712</a><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16} /> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16} /> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 flex max-w-7xl flex-col gap-2 border-t border-ivory/10 pt-6 text-xs text-ivory/40 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} Clínica Dental Siloé</span><span>Sonrisas que iluminan</span></div></footer> }

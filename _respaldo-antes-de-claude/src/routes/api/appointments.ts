@@ -1,55 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomUUID } from "node:crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { escapeHtml, formatDate, getTodayDate } from "@/lib/appointment-utils";
-import { getClientKey, isRateLimited, isTooFast } from "@/lib/anti-spam";
+import { escapeHtml, formatDate } from "@/lib/appointment-utils";
 import { sendEmail } from "@/lib/mailer";
-import { getBookingHoursForDate } from "@/lib/site";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const MAX_BODY_CHARS = 20_000;
+
 
 export const Route = createFileRoute("/api/appointments")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
-          // 1) Freno por persona: demasiados envíos seguidos desde la misma conexión.
-          if (isRateLimited(getClientKey(request))) {
-            return Response.json(
-              { ok: false, error: "Hemos recibido muchas solicitudes desde tu conexión. Espera unos minutos o escríbenos por WhatsApp." },
-              { status: 429, headers: { "retry-after": "600" } },
-            );
-          }
-
-          const rawBody = await request.text();
-          if (rawBody.length > MAX_BODY_CHARS) {
-            return Response.json({ ok: false, error: "La solicitud es demasiado grande." }, { status: 413 });
-          }
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let body: any;
-          try {
-            body = JSON.parse(rawBody);
-            if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("invalid");
-          } catch {
-            return Response.json({ ok: false, error: "No se pudo leer la solicitud." }, { status: 400 });
-          }
-
-          // 2) Campo trampa: solo los programas automáticos lo llenan. Respondemos "ok" sin guardar nada.
-          if (String(body.website ?? "").trim() !== "") {
-            return Response.json({ ok: true });
-          }
-
-          // 3) Tiempo mínimo: enviar el formulario en menos de unos segundos no es humano.
-          if (isTooFast(body.startedAt)) {
-            return Response.json(
-              { ok: false, error: "Espera unos segundos e inténtalo de nuevo." },
-              { status: 400 },
-            );
-          }
-
+          const body = await request.json();
           const name = String(body.name ?? "").trim();
           const phone = String(body.phone ?? "").trim();
           const email = String(body.email ?? "").trim() || null;
@@ -60,26 +22,6 @@ export const Route = createFileRoute("/api/appointments")({
 
           if (!name || !phone || !service || !preferredDate || !preferredTime) {
             return Response.json({ ok: false, error: "Faltan datos obligatorios." }, { status: 400 });
-          }
-
-          // 4) Validación de los datos en el servidor (no basta con validar en el navegador).
-          const phoneDigits = phone.replace(/\D/g, "").length;
-          const invalid =
-            name.length < 2 || name.length > 120 ||
-            phoneDigits < 7 || phone.length > 30 ||
-            (email !== null && (email.length > 254 || !EMAIL_PATTERN.test(email))) ||
-            service.length > 120 ||
-            (message !== null && message.length > 2000) ||
-            !DATE_PATTERN.test(preferredDate) ||
-            preferredDate < getTodayDate() ||
-            // Horario real de la clínica: sábado solo en la mañana y domingo cerrado.
-            !getBookingHoursForDate(preferredDate).includes(preferredTime);
-
-          if (invalid) {
-            return Response.json(
-              { ok: false, error: "Revisa los datos de la solicitud e inténtalo de nuevo." },
-              { status: 400 },
-            );
           }
 
           const { data: existingAppointment } = await supabaseAdmin
@@ -124,8 +66,7 @@ export const Route = createFileRoute("/api/appointments")({
           const safeDate = escapeHtml(formatDate(preferredDate));
           const safeTime = escapeHtml(preferredTime);
           const safeMessage = escapeHtml(message ?? "Sin mensaje adicional");
-          // Correo que recibe los avisos de nuevas citas. Si no se define NOTIFY_EMAIL, se usa GMAIL_USER.
-          const secretaryEmail = process.env["NOTIFY_EMAIL"] || process.env["GMAIL_USER"];
+          const secretaryEmail = process.env["GMAIL_USER"];
           const appUrl = process.env["PUBLIC_APP_URL"] || "http://localhost:3000";
           const acceptUrl = `${appUrl}/api/appointments/accept?token=${appointment.action_token}`;
           const rejectUrl = `${appUrl}/api/appointments/reject?token=${appointment.action_token}`;

@@ -10,9 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AvisoLegalRouteImport } from './routes/aviso-legal'
-import { Route as PoliticaDeCookiesRouteImport } from './routes/politica-de-cookies'
-import { Route as PoliticaDePrivacidadRouteImport } from './routes/politica-de-privacidad'
 import { Route as ApiAppointmentsRouteImport } from './routes/api/appointments'
 import { Route as ApiTestEmailRouteImport } from './routes/api/test-email'
 import { Route as ApiAppointmentsAcceptRouteImport } from './routes/api/appointments/accept'
@@ -22,21 +19,6 @@ import { Route as ApiCronRemindersRouteImport } from './routes/api/cron/reminder
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AvisoLegalRoute = AvisoLegalRouteImport.update({
-  id: '/aviso-legal',
-  path: '/aviso-legal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoliticaDeCookiesRoute = PoliticaDeCookiesRouteImport.update({
-  id: '/politica-de-cookies',
-  path: '/politica-de-cookies',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoliticaDePrivacidadRoute = PoliticaDePrivacidadRouteImport.update({
-  id: '/politica-de-privacidad',
-  path: '/politica-de-privacidad',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAppointmentsRoute = ApiAppointmentsRouteImport.update({
@@ -67,9 +49,6 @@ const ApiCronRemindersRoute = ApiCronRemindersRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/aviso-legal': typeof AvisoLegalRoute
-  '/politica-de-cookies': typeof PoliticaDeCookiesRoute
-  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/test-email': typeof ApiTestEmailRoute
   '/api/appointments/accept': typeof ApiAppointmentsAcceptRoute
@@ -78,9 +57,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/aviso-legal': typeof AvisoLegalRoute
-  '/politica-de-cookies': typeof PoliticaDeCookiesRoute
-  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/test-email': typeof ApiTestEmailRoute
   '/api/appointments/accept': typeof ApiAppointmentsAcceptRoute
@@ -90,9 +66,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/aviso-legal': typeof AvisoLegalRoute
-  '/politica-de-cookies': typeof PoliticaDeCookiesRoute
-  '/politica-de-privacidad': typeof PoliticaDePrivacidadRoute
   '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/test-email': typeof ApiTestEmailRoute
   '/api/appointments/accept': typeof ApiAppointmentsAcceptRoute
@@ -103,9 +76,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/aviso-legal'
-    | '/politica-de-cookies'
-    | '/politica-de-privacidad'
     | '/api/appointments'
     | '/api/test-email'
     | '/api/appointments/accept'
@@ -114,9 +84,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/aviso-legal'
-    | '/politica-de-cookies'
-    | '/politica-de-privacidad'
     | '/api/appointments'
     | '/api/test-email'
     | '/api/appointments/accept'
@@ -125,9 +92,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/aviso-legal'
-    | '/politica-de-cookies'
-    | '/politica-de-privacidad'
     | '/api/appointments'
     | '/api/test-email'
     | '/api/appointments/accept'
@@ -137,9 +101,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AvisoLegalRoute: typeof AvisoLegalRoute
-  PoliticaDeCookiesRoute: typeof PoliticaDeCookiesRoute
-  PoliticaDePrivacidadRoute: typeof PoliticaDePrivacidadRoute
   ApiAppointmentsRoute: typeof ApiAppointmentsRouteWithChildren
   ApiTestEmailRoute: typeof ApiTestEmailRoute
   ApiCronRemindersRoute: typeof ApiCronRemindersRoute
@@ -152,27 +113,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/aviso-legal': {
-      id: '/aviso-legal'
-      path: '/aviso-legal'
-      fullPath: '/aviso-legal'
-      preLoaderRoute: typeof AvisoLegalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/politica-de-cookies': {
-      id: '/politica-de-cookies'
-      path: '/politica-de-cookies'
-      fullPath: '/politica-de-cookies'
-      preLoaderRoute: typeof PoliticaDeCookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/politica-de-privacidad': {
-      id: '/politica-de-privacidad'
-      path: '/politica-de-privacidad'
-      fullPath: '/politica-de-privacidad'
-      preLoaderRoute: typeof PoliticaDePrivacidadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/appointments': {
@@ -229,9 +169,6 @@ const ApiAppointmentsRouteWithChildren = ApiAppointmentsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AvisoLegalRoute: AvisoLegalRoute,
-  PoliticaDeCookiesRoute: PoliticaDeCookiesRoute,
-  PoliticaDePrivacidadRoute: PoliticaDePrivacidadRoute,
   ApiAppointmentsRoute: ApiAppointmentsRouteWithChildren,
   ApiTestEmailRoute: ApiTestEmailRoute,
   ApiCronRemindersRoute: ApiCronRemindersRoute,

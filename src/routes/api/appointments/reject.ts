@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getBookingHoursForDate } from "@/lib/site";
 import {
-  APPOINTMENT_HOUR_SLOTS,
   buildWhatsAppUrl,
   escapeHtml,
   formatDate,
@@ -94,6 +94,10 @@ export const Route = createFileRoute("/api/appointments/reject")({
             );
           }
 
+          if (!getBookingHoursForDate(proposedDate).includes(proposedTime)) {
+            return page("Horario no disponible", "<p>Esa hora está fuera del horario de la clínica. Elige otra hora.</p>");
+          }
+
           const occupiedTimes = await getOccupiedTimesForDate(proposedDate);
           if (occupiedTimes.includes(proposedTime)) {
             return page("Horario ocupado", "<p>Ese horario ya fue tomado por otra cita. Elige otra hora.</p>");
@@ -112,7 +116,7 @@ export const Route = createFileRoute("/api/appointments/reject")({
             return page("No se pudo guardar la propuesta", "<p>Inténtalo nuevamente en unos minutos.</p>");
           }
 
-          const phoneMessage = `Hola ${appointment.name} 👋
+          const phoneMessage = `Hola ${appointment.name}
 Le saludamos de Clínica Dental Siloé.
 
 Lamentablemente no tenemos disponibilidad para su cita de ${appointment.service} el ${formatDate(appointment.preferred_date)} a las ${appointment.preferred_time}.
@@ -149,7 +153,8 @@ Gracias por su comprensión.`;
           }
 
           const occupied = await getOccupiedTimesForDate(selectedDate);
-          const slots = APPOINTMENT_HOUR_SLOTS.filter((hour) => !occupied.includes(hour));
+          // Solo las horas del horario real de la clínica (sábado hasta las 12:00).
+          const slots = getBookingHoursForDate(selectedDate).filter((hour) => !occupied.includes(hour));
 
           const selectedDateLabel = escapeHtml(toHumanDayLabel(selectedDate));
           const timeButtons = slots.length

@@ -1,8 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
 User-agent: Googlebot
 Allow: /
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /api/
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +16,5 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+# PENDIENTE: cambiar el dominio cuando tengan el definitivo.
+Sitemap: https://siloe-dental-care.lovable.app/sitemap.xml
