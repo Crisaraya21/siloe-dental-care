@@ -2,18 +2,22 @@ name: Recordatorios de citas
 
 on:
   schedule:
-    - cron: '0 * * * *' # Cada hora en punto
-  workflow_dispatch: # También permite ejecutarlo manualmente desde GitHub
+    # Usamos el minuto :17 en vez del :00. El minuto 0 sufre retrasos de hasta 30 min por saturación global.
+    - cron: '17 * * * *'
+  workflow_dispatch:
 
 jobs:
   recordatorios:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permiso para que el paso de keepalive cree el commit cuando haga falta
+
     steps:
       - name: Descargar proyecto
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
@@ -28,3 +32,9 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: node scripts/send-reminders.mjs
+
+      - name: Mantener workflow activo
+        uses: gautamkrishnar/keepalive-workflow@v2
+        with:
+          commit_message: "chore: keepalive automatic update"
+          time_elapsed: "50"
