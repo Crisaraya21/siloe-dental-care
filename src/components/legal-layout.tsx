@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import logoImage from "@/assets/logo 1 clinica dental.png";
+import logoImage from "@/assets/logo-siloe.png";
 import { SITE } from "@/lib/site";
 
 export function LegalLayout({
@@ -26,7 +26,7 @@ export function LegalLayout({
               className="size-10 rounded-full border border-primary/50 object-cover"
             />
             <span className="text-sm font-semibold leading-tight text-primary">
-              CLÍNICA DENTAL <span className="block tracking-[0.28em] text-ivory">SILOÉ</span>
+              CLÍNICA DENTAL <span className="block tracking-[0.1em] text-ivory">SILOÉ</span>
             </span>
           </Link>
           <Link

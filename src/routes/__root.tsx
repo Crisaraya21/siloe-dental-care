@@ -11,7 +11,7 @@ import { type ReactNode } from "react";
 import { Home, MessageCircle, CalendarDays } from "lucide-react";
 
 import appCss from "../styles.css?url";
-import logoImage from "@/assets/logo 1 clinica dental.png";
+import logoImage from "@/assets/logo-siloe.png";
 import { SITE, whatsappLink } from "@/lib/site";
 
 function NotFoundComponent() {
