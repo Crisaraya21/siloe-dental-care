@@ -6,22 +6,22 @@ import {
   Star, X,
 } from "lucide-react";
 import { ClinicMap } from "@/components/clinic-map";
-import { BOOKING_HOURS_WEEKDAY, DIRECTIONS_URL, SITE, getBookingHoursForDate, priceInquiryLink } from "@/lib/site";
+import { BOOKING_HOURS_WEEKDAY, DIRECTIONS_URL, OTHER_SERVICE_DETAIL_ERROR, OTHER_SERVICE_MIN_DETAIL, OTHER_SERVICE_NAME, SITE, getBookingHoursForDate, priceInquiryLink } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-const heroImage = "https://media.base44.com/images/public/6a9b942b1c9290ab9b897c54/52fd812bd_generated_a1e43129.jpg";
-import logoAsset from "@/assets/image-9.png.asset.json";
+import heroImage from "@/assets/hero.jpg";
+import logoImage from "@/assets/logo 1 clinica dental.png";
 import esteticaImage from "@/assets/estetica-dental.jpeg";
-import carillasAsset from "@/assets/carillas.png.asset.json";
-import blanqueamientoAsset from "@/assets/blanqueamiento.png.asset.json";
-import coronasAsset from "@/assets/coronas.png.asset.json";
-import protesisAsset from "@/assets/protesis.png.asset.json";
-import extraccionesAsset from "@/assets/extracciones.png.asset.json";
-import cirugiaAsset from "@/assets/cirugia.png.asset.json";
-import limpiezaAsset from "@/assets/limpieza.png.asset.json";
+import carillasImage from "@/assets/carillas.jpg";
+import blanqueamientoImage from "@/assets/blanqueamiento.jpg";
+import coronasImage from "@/assets/coronas.jpg";
+import protesisImage from "@/assets/protesis.jpg";
+import extraccionesImage from "@/assets/extracciones.jpg";
+import cirugiaImage from "@/assets/cirugia.jpg";
+import limpiezaImage from "@/assets/limpieza.jpg";
 import radiografiaTacImage from "@/assets/radiografia-tac.jpeg";
 import frenillosImage from "@/assets/frenillos.jpeg";
 import instagramPhoto1 from "@/assets/instagram-1.jpeg";
@@ -32,8 +32,8 @@ import instagramPhoto5 from "@/assets/instagram-5.jpeg";
 import instagramPhoto6 from "@/assets/instagram-6.jpeg";
 import fachadaImage from "@/assets/fachada-siloe.jpeg";
 
-const getAssetUrl = (url: string) =>
-  url.startsWith("/__l5e/") ? `https://siloe-dental-care.lovable.app${url}` : url;
+// Google y redes sociales piden la dirección completa de la imagen, no solo la ruta.
+const absoluteUrl = (path: string) => (path.startsWith("http") ? path : `${SITE.url}${path}`);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Tu sonrisa es la luz de tu historia. Solicita tu cita en línea." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE.url },
-      { property: "og:image", content: heroImage },
+      { property: "og:image", content: absoluteUrl(heroImage) },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: `${SITE.url}/` }],
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/")({
           "@type": "Dentist",
           name: SITE.name,
           url: SITE.url,
-          image: heroImage,
+          image: absoluteUrl(heroImage),
           email: SITE.email,
           telephone: `+${SITE.phoneIntl.slice(0, 3)} ${SITE.phoneIntl.slice(3, 7)} ${SITE.phoneIntl.slice(7)}`,
           address: {
@@ -92,13 +92,13 @@ export const Route = createFileRoute("/")({
 
 const SERVICES = [
   { title: "Estética Dental", image: esteticaImage, desc: "Tratamientos personalizados para armonizar la forma, el color y la proporción de la sonrisa.", fullDesc: "La valoración estética considera la forma, el color y la proporción de los dientes en relación con la sonrisa y los rasgos faciales. Con base en tus necesidades, se define un plan individualizado y los procedimientos más adecuados." },
-  { title: "Carillas", image: getAssetUrl(carillasAsset.url), desc: "Láminas de cerámica diseñadas para modificar la forma, el tamaño o el color dental.", fullDesc: "Las carillas son láminas delgadas, generalmente de cerámica, que se adhieren a la superficie frontal de los dientes. Tras valorar la salud oral y las características de cada pieza, pueden indicarse para corregir cambios de color, forma, tamaño o pequeñas irregularidades." },
-  { title: "Blanqueamiento", image: getAssetUrl(blanqueamientoAsset.url), desc: "Tratamiento profesional para aclarar el tono de los dientes naturales de forma controlada.", fullDesc: "Antes del blanqueamiento se revisan la salud oral, el tono inicial y la sensibilidad dental. La técnica se selecciona según cada caso; el grado de aclaramiento y la respuesta al tratamiento pueden variar entre personas." },
-  { title: "Coronas y Puentes", image: getAssetUrl(coronasAsset.url), desc: "Restauraciones que protegen dientes debilitados y reemplazan piezas ausentes.", fullDesc: "Las coronas recubren y restauran dientes con daño extenso, mientras que los puentes pueden sustituir una o más piezas ausentes apoyándose en dientes o implantes. La valoración determina el diseño, el material y la alternativa indicada para cada caso." },
-  { title: "Prótesis Dentales", image: getAssetUrl(protesisAsset.url), desc: "Alternativas fijas y removibles para sustituir dientes y recuperar función masticatoria.", fullDesc: "Las prótesis parciales o completas, fijas o removibles, se planifican para reemplazar dientes ausentes y favorecer la masticación y el habla. El tipo de prótesis se define según la salud de los tejidos, las piezas restantes y las necesidades de cada paciente." },
-  { title: "Extracciones", image: getAssetUrl(extraccionesAsset.url), desc: "Retiro de piezas dentales cuando su estado o posición requiere extracción.", fullDesc: "El procedimiento comienza con una valoración de la pieza y de los tejidos cercanos; cuando se requiere, se complementa con estudios de imagen. La extracción se realiza con anestesia local y se acompaña de indicaciones para el cuidado y la recuperación." },
-  { title: "Cirugía", image: getAssetUrl(cirugiaAsset.url), desc: "Procedimientos de cirugía oral e implantología planificados según cada caso.", fullDesc: "La atención puede incluir procedimientos de cirugía oral, extracción de cordales e instalación de implantes. Cada plan se establece después de revisar la salud oral y los estudios necesarios, con indicaciones de preparación y seguimiento posterior." },
-  { title: "Limpieza Dental", image: getAssetUrl(limpiezaAsset.url), desc: "Profilaxis profesional para remover placa y cálculo y apoyar la salud de las encías.", fullDesc: "La limpieza profesional ayuda a retirar placa bacteriana y cálculo de las superficies dentales y del margen de las encías. Según la valoración, puede incluir pulido y recomendaciones de higiene para mantener la salud oral entre consultas." },
+  { title: "Carillas", image: carillasImage, desc: "Láminas de cerámica diseñadas para modificar la forma, el tamaño o el color dental.", fullDesc: "Las carillas son láminas delgadas, generalmente de cerámica, que se adhieren a la superficie frontal de los dientes. Tras valorar la salud oral y las características de cada pieza, pueden indicarse para corregir cambios de color, forma, tamaño o pequeñas irregularidades." },
+  { title: "Blanqueamiento", image: blanqueamientoImage, desc: "Tratamiento profesional para aclarar el tono de los dientes naturales de forma controlada.", fullDesc: "Antes del blanqueamiento se revisan la salud oral, el tono inicial y la sensibilidad dental. La técnica se selecciona según cada caso; el grado de aclaramiento y la respuesta al tratamiento pueden variar entre personas." },
+  { title: "Coronas y Puentes", image: coronasImage, desc: "Restauraciones que protegen dientes debilitados y reemplazan piezas ausentes.", fullDesc: "Las coronas recubren y restauran dientes con daño extenso, mientras que los puentes pueden sustituir una o más piezas ausentes apoyándose en dientes o implantes. La valoración determina el diseño, el material y la alternativa indicada para cada caso." },
+  { title: "Prótesis Dentales", image: protesisImage, desc: "Alternativas fijas y removibles para sustituir dientes y recuperar función masticatoria.", fullDesc: "Las prótesis parciales o completas, fijas o removibles, se planifican para reemplazar dientes ausentes y favorecer la masticación y el habla. El tipo de prótesis se define según la salud de los tejidos, las piezas restantes y las necesidades de cada paciente." },
+  { title: "Extracciones", image: extraccionesImage, desc: "Retiro de piezas dentales cuando su estado o posición requiere extracción.", fullDesc: "El procedimiento comienza con una valoración de la pieza y de los tejidos cercanos; cuando se requiere, se complementa con estudios de imagen. La extracción se realiza con anestesia local y se acompaña de indicaciones para el cuidado y la recuperación." },
+  { title: "Cirugía", image: cirugiaImage, desc: "Procedimientos de cirugía oral e implantología planificados según cada caso.", fullDesc: "La atención puede incluir procedimientos de cirugía oral, extracción de cordales e instalación de implantes. Cada plan se establece después de revisar la salud oral y los estudios necesarios, con indicaciones de preparación y seguimiento posterior." },
+  { title: "Limpieza Dental", image: limpiezaImage, desc: "Profilaxis profesional para remover placa y cálculo y apoyar la salud de las encías.", fullDesc: "La limpieza profesional ayuda a retirar placa bacteriana y cálculo de las superficies dentales y del margen de las encías. Según la valoración, puede incluir pulido y recomendaciones de higiene para mantener la salud oral entre consultas." },
   { title: "Radiografía Panorámica y TAC Dental", image: radiografiaTacImage, desc: "Imágenes panorámicas y tomografía 3D para valorar estructuras dentales con mayor detalle.", fullDesc: "La radiografía panorámica ofrece una vista general de los dientes y los maxilares; la tomografía computarizada (TAC o CBCT) produce imágenes tridimensionales de las estructuras indicadas. Estos estudios pueden apoyar la planificación de implantes, cirugías, ortodoncia y otros tratamientos complejos cuando el profesional los considera necesarios." },
   { title: "Ortodoncia (Frenillos)", image: frenillosImage, desc: "Ortodoncia con frenillos para alinear los dientes y corregir alteraciones de la mordida.", fullDesc: "La ortodoncia con frenillos aplica fuerzas controladas para corregir la posición de los dientes y algunas alteraciones de la mordida. El tratamiento incluye valoración, planificación individual y controles periódicos; su duración depende de las necesidades y evolución de cada paciente." },
 ] as const;
@@ -297,7 +297,7 @@ function Home() {
     <header className={`fixed inset-x-0 top-0 z-40 ${scrolled || menuOpen ? "border-b border-primary/20 bg-ink/90 backdrop-blur-xl" : "bg-transparent"}`}>
       <div className={`mx-auto flex ${scrolled || menuOpen ? "h-16" : "h-20"} max-w-7xl items-center justify-between px-5 sm:px-8`}>
         <a href="#inicio" className="flex items-center gap-3 font-[system-ui,sans-serif]" aria-label="Clínica Dental Siloé">
-          <img src={getAssetUrl(logoAsset.url)} alt="Logo Clínica Dental Siloé" className={`size-12 rounded-full border border-primary/50 object-cover transition-transform duration-200 ease-out ${scrolled ? "scale-90" : "scale-100"} motion-reduce:transition-none`} />
+          <img src={logoImage} alt="Logo Clínica Dental Siloé" className={`size-12 rounded-full border border-primary/50 object-cover transition-transform duration-200 ease-out ${scrolled ? "scale-90" : "scale-100"} motion-reduce:transition-none`} />
           <div className="text-sm font-semibold leading-tight text-primary sm:text-base"><span className="block">CLÍNICA DENTAL</span><span className="block tracking-[0.28em] text-ivory">SILOÉ</span></div>
         </a>
         <nav ref={desktopNavRef} className="relative hidden items-center gap-8 font-[system-ui,sans-serif] lg:flex">{NAV_ITEMS.map(([label, href]) => <a key={href} href={href} data-nav-id={href.slice(1)} aria-current={activeSection === href.slice(1) ? "location" : undefined} className={`text-sm transition-colors hover:text-primary ${activeSection === href.slice(1) ? "text-ivory" : "text-ivory/75"}`}>{label}</a>)}<span aria-hidden="true" className="pointer-events-none absolute -bottom-2 left-0 h-0.5 w-full origin-left bg-primary motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none" style={{ transform: `translateX(${navIndicator.x}px) scaleX(${navIndicator.scale})`, opacity: navIndicator.opacity }} /></nav>
@@ -347,6 +347,11 @@ function Booking() {
   const [step, setStep] = useState(1), [service, setService] = useState(""), [date, setDate] = useState(""), [time, setTime] = useState(""), [sent, setSent] = useState(false), [loading, setLoading] = useState(false), [error, setError] = useState("");
   const [fields, setFields] = useState({ name: "", phone: "", email: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, email: false });
+  // Descripción de la cita. Es obligatoria (mínimo 5 caracteres) cuando se elige "Otro servicio".
+  const [detail, setDetail] = useState(""), [detailTouched, setDetailTouched] = useState(false);
+  const needsDetail = service === OTHER_SERVICE_NAME;
+  const detailInvalid = needsDetail && detail.trim().length < OTHER_SERVICE_MIN_DETAIL;
+  const showDetailError = detailInvalid && (detailTouched || detail.length > 0);
   // Momento en que la persona llegó al paso de datos; sirve para detectar envíos automáticos demasiado rápidos.
   const formStartedAt = useRef(0);
   const today =new Intl.DateTimeFormat("en-CA", { timeZone: "America/Costa_Rica", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -380,8 +385,9 @@ function Booking() {
     const phoneValid = formPhone.replace(/\D/g, "").length >= 7 && formPhone.length <= 30;
     const emailValid = !formEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail);
     setTouched({ name: true, phone: true, email: true });
-    if (!nameValid || !phoneValid || !emailValid) {
-      setError("Revisa los campos marcados antes de continuar.");
+    setDetailTouched(true);
+    if (!nameValid || !phoneValid || !emailValid || detailInvalid) {
+      setError(detailInvalid && nameValid && phoneValid && emailValid ? OTHER_SERVICE_DETAIL_ERROR : "Revisa los campos marcados antes de continuar.");
       return;
     }
     if (loading) return;
@@ -401,7 +407,7 @@ function Booking() {
           service,
           preferredDate: date,
           preferredTime: time,
-          message: form.get("message"),
+          message: detail,
           website: form.get("website_url"),
           startedAt: formStartedAt.current,
         }),
@@ -430,15 +436,18 @@ function Booking() {
     }
   }
   return <section id="agendar" className="bg-ink py-24 sm:py-28"><SectionTitle dark eyebrow="Solicita tu cita" title="Solicita en tres pasos" subtitle="Selecciona el servicio, elige fecha y hora, y déjanos tus datos. Te contactaremos para confirmar." /><div className="mx-auto mt-14 max-w-4xl px-5 sm:px-8"><div className="rounded-2xl border border-primary/25 bg-ivory/5 p-6 sm:p-10">
-    {sent ? <div role="status" aria-live="polite" className="py-12 text-center"><span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-ink"><Check size={30} /></span><h3 className="mt-6 text-3xl text-ivory">Solicitud recibida</h3><p className="mx-auto mt-3 max-w-md text-ivory/60">Gracias. Te contactaremos pronto para confirmar el día y la hora de tu cita.</p><Button variant="goldOutline" className="mt-7 rounded-full" onClick={() => { setSent(false); setStep(1); setService(""); setDate(""); setTime(""); formStartedAt.current = 0; }}>Solicitar otra cita</Button></div> : <>
+    {sent ? <div role="status" aria-live="polite" className="py-12 text-center"><span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-ink"><Check size={30} /></span><h3 className="mt-6 text-3xl text-ivory">Solicitud recibida</h3><p className="mx-auto mt-3 max-w-md text-ivory/60">Gracias. Te contactaremos pronto para confirmar el día y la hora de tu cita.</p><Button variant="goldOutline" className="mt-7 rounded-full" onClick={() => { setSent(false); setStep(1); setService(""); setDate(""); setTime(""); setDetail(""); setDetailTouched(false); formStartedAt.current = 0; }}>Solicitar otra cita</Button></div> : <>
       <div className="mx-auto mb-10 flex max-w-xs items-center">{[1, 2, 3].map((n, i) => <div key={n} className="contents"><span className={`grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold ${step >= n ? "bg-primary text-ink" : "bg-ivory/10 text-ivory/40"}`}>{n}</span>{i < 2 && <span className={`h-px flex-1 ${step > n ? "bg-primary" : "bg-ivory/10"}`} />}</div>)}</div>
-      {step === 1 && <div><h3 className="mb-7 text-center text-2xl text-ivory">¿Qué servicio necesitas?</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{SERVICES.map(s => <Button key={s.title} variant="ghost" className={`h-auto min-h-14 justify-start whitespace-normal border px-5 py-3 text-left text-ivory ${service === s.title ? "border-primary bg-primary/15 text-primary" : "border-ivory/15 hover:border-primary/50 hover:bg-ivory/5"}`} onClick={() => setService(s.title)}>{service === s.title && <Check />}{s.title}</Button>)}</div><div className="mt-8 flex justify-end"><Button variant="gold" size="lg" disabled={!service} onClick={() => setStep(2)}>Continuar <ChevronRight /></Button></div></div>}
+      {step === 1 && <div><h3 className="mb-7 text-center text-2xl text-ivory">¿Qué servicio necesitas?</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{SERVICES.map(s => <Button key={s.title} variant="ghost" className={`h-auto min-h-14 justify-start whitespace-normal border px-5 py-3 text-left text-ivory ${service === s.title ? "border-primary bg-primary/15 text-primary" : "border-ivory/15 hover:border-primary/50 hover:bg-ivory/5"}`} onClick={() => setService(s.title)}>{service === s.title && <Check />}{s.title}</Button>)}<Button variant="ghost" className={`h-auto min-h-14 justify-start whitespace-normal border border-dashed px-5 py-3 text-left text-ivory ${service === OTHER_SERVICE_NAME ? "border-primary bg-primary/15 text-primary" : "border-ivory/25 hover:border-primary/50 hover:bg-ivory/5"}`} aria-pressed={service === OTHER_SERVICE_NAME} onClick={() => setService(OTHER_SERVICE_NAME)}>{service === OTHER_SERVICE_NAME && <Check />}{OTHER_SERVICE_NAME}</Button></div><div className="mt-8 flex justify-end"><Button variant="gold" size="lg" disabled={!service} onClick={() => setStep(2)}>Continuar <ChevronRight /></Button></div></div>}
       {step === 2 && <div><h3 className="mb-7 text-center text-2xl text-ivory">Elige fecha y hora</h3><div className="mx-auto grid max-w-xl gap-5 sm:grid-cols-2"><label className="text-sm text-ivory/70">Fecha<Input type="date" min={today} value={date} onChange={e => changeDate(e.target.value)} aria-invalid={dateIsClosed} className="mt-2 h-12 border-ivory/20 bg-ivory/5 text-ivory [color-scheme:dark]" /></label><label className="text-sm text-ivory/70">Hora<select value={time} onChange={e => setTime(e.target.value)} disabled={dateIsClosed} className="mt-2 h-12 w-full rounded-md border border-ivory/20 bg-ink px-4 text-ivory outline-none focus:border-primary disabled:opacity-50"><option value="">Seleccionar</option>{hoursForDate.map(h => <option key={h}>{h}</option>)}</select></label></div>{dateIsClosed && <p role="alert" className="mx-auto mt-4 max-w-xl text-sm text-destructive">Los domingos la clínica está cerrada. Elige otro día.</p>}{date && !dateIsClosed && !time && <p className="mx-auto mt-4 max-w-xl text-xs text-ivory/55">{new Date(`${date}T12:00:00Z`).getUTCDay() === 6 ? "Los sábados atendemos de 8:00 a. m. a 12:00 p. m." : "De lunes a viernes atendemos de 8:00 a. m. a 5:30 p. m."}</p>}<div className="mt-8 flex justify-between"><Button variant="ghost" className="text-ivory" onClick={() => setStep(1)}><ChevronLeft /> Atrás</Button><Button variant="gold" size="lg" disabled={!date || !time} onClick={() => { if (!formStartedAt.current) formStartedAt.current = Date.now(); setStep(3); }}>Continuar <ChevronRight /></Button></div></div>}
       {step === 3 && <form onSubmit={submit} aria-busy={loading} className="relative"><h3 className="mb-7 text-center text-2xl text-ivory">Cuéntanos cómo contactarte</h3><fieldset disabled={loading} className="m-0 min-w-0 border-0 p-0"><Honeypot name="website_url" /><div className="grid gap-4 sm:grid-cols-2">
         <BookingField id="booking-name" name="name" label="Nombre completo *" required value={fields.name} status={fieldStatus("name")} onValueChange={(value) => updateField("name", value)} onBlur={() => setTouched((current) => ({ ...current, name: true }))} />
         <BookingField id="booking-phone" name="phone" label="Teléfono *" required value={fields.phone} status={fieldStatus("phone")} onValueChange={(value) => updateField("phone", value)} onBlur={() => setTouched((current) => ({ ...current, phone: true }))} />
         <BookingField id="booking-email" name="email" label="Correo electrónico" type="email" value={fields.email} status={fieldStatus("email")} onValueChange={(value) => updateField("email", value)} onBlur={() => setTouched((current) => ({ ...current, email: true }))} className="sm:col-span-2" />
-        <Textarea name="message" placeholder="Mensaje o detalle adicional" className="min-h-28 border-ivory/20 bg-ivory/5 p-4 text-ivory placeholder:text-ivory/40 sm:col-span-2" />
+        <div className="sm:col-span-2">
+          <Textarea id="booking-message" name="message" value={detail} maxLength={2000} onChange={(event) => setDetail(event.target.value)} onBlur={() => setDetailTouched(true)} aria-required={needsDetail} aria-invalid={showDetailError} aria-describedby={needsDetail ? "booking-message-help" : undefined} placeholder={needsDetail ? "Cuéntanos qué servicio necesitas *" : "Mensaje o detalle adicional"} className={`min-h-28 bg-ivory/5 p-4 text-ivory placeholder:text-ivory/40 ${showDetailError ? "border-destructive" : "border-ivory/20"}`} />
+          {needsDetail && <p id="booking-message-help" className={`mt-2 text-xs ${showDetailError ? "text-destructive" : "text-ivory/55"}`}>{showDetailError ? OTHER_SERVICE_DETAIL_ERROR : "Describe qué necesitas para que podamos prepararnos para tu cita."}</p>}
+        </div>
       </div></fieldset>
       {loading && <div role="status" aria-live="polite" className="mt-6 rounded-xl border border-primary/30 bg-primary/10 p-4"><div className="flex items-center gap-3 text-sm text-ivory"><LoaderCircle className="size-5 shrink-0 animate-spin text-primary motion-reduce:animate-none" aria-hidden="true" /><span>Enviando tu solicitud. Puede tardar unos segundos, por favor no cierres la página.</span></div><div className="loading-bar mt-4" aria-hidden="true" /></div>}
       {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}<div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between"><Button type="button" variant="ghost" className="text-ivory" disabled={loading} onClick={() => setStep(2)}><ChevronLeft /> Atrás</Button><Button type="submit" variant="gold" size="lg" disabled={loading} aria-disabled={loading}>{loading ? <><LoaderCircle className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> Enviando…</> : <>Enviar solicitud <ArrowRight /></>}</Button></div></form>}
@@ -980,4 +989,4 @@ function InstagramFeed() {
   </section>;
 }
 
-function Footer() { return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={getAssetUrl(logoAsset.url)} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover" /><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios", "#servicios"], ["Solicitar", "#agendar"], ["Reseñas", "#resenas"], ["Preguntas", "#faq"]].map(([l, h]) => <a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16} /> 7013 7712</a><span className="flex select-none items-center gap-2"><Phone size={16} /> 2460 7923</span><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16} /> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16} /> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 max-w-7xl border-t border-ivory/10 pt-6 font-[system-ui,sans-serif] text-xs text-ivory/60"><nav aria-label="Información legal" className="flex flex-wrap gap-x-6 gap-y-3"><Link to="/aviso-legal" className="hover:text-primary">Aviso legal</Link><Link to="/politica-de-privacidad" className="hover:text-primary">Política de privacidad</Link><Link to="/politica-de-cookies" className="hover:text-primary">Política de cookies</Link></nav><p className="mt-5 leading-5">{SITE.name} se reserva el derecho de admisión. La información de este sitio es de carácter general y no sustituye la valoración de un profesional; los resultados pueden variar de una persona a otra. Enviar una solicitud no confirma la cita.</p><div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} {SITE.name}. Todos los derechos reservados.</span><span>Sonrisas que iluminan</span></div></div></footer> }
+function Footer() { return <footer className="border-t border-primary/20 bg-ink px-5 py-14 text-ivory sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-3"><div><div className="flex items-center gap-3"><img src={logoImage} alt="Logo de Clínica Dental Siloé" className="size-14 rounded-full object-cover" /><h3 className="text-xl text-primary">Clínica Dental Siloé</h3></div><p className="mt-4 max-w-xs text-sm leading-6 text-ivory/55">Atención dental con precisión, calidez y una estética natural.</p></div><div><h3 className="text-lg">Navegación</h3><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-ivory/55">{[["Servicios", "#servicios"], ["Solicitar", "#agendar"], ["Reseñas", "#resenas"], ["Preguntas", "#faq"]].map(([l, h]) => <a key={h} href={h} className="hover:text-primary">{l}</a>)}</div></div><div><h3 className="text-lg">Contacto</h3><div className="mt-4 space-y-3 text-sm text-ivory/55"><a href="tel:70137712" className="flex items-center gap-2 hover:text-primary"><Phone size={16} /> 7013 7712</a><span className="flex select-none items-center gap-2"><Phone size={16} /> 2460 7923</span><a href="#ubicacion" className="flex items-center gap-2 hover:text-primary"><MapPin size={16} /> Clínica Dental Siloé</a><a href="https://instagram.com/clinicadentalsiloe" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary"><Instagram size={16} /> @clinicadentalsiloe</a></div></div></div><div className="mx-auto mt-12 max-w-7xl border-t border-ivory/10 pt-6 font-[system-ui,sans-serif] text-xs text-ivory/60"><nav aria-label="Información legal" className="flex flex-wrap gap-x-6 gap-y-3"><Link to="/aviso-legal" className="hover:text-primary">Aviso legal</Link><Link to="/politica-de-privacidad" className="hover:text-primary">Política de privacidad</Link><Link to="/politica-de-cookies" className="hover:text-primary">Política de cookies</Link></nav><p className="mt-5 leading-5">{SITE.name} se reserva el derecho de admisión. La información de este sitio es de carácter general y no sustituye la valoración de un profesional; los resultados pueden variar de una persona a otra. Enviar una solicitud no confirma la cita.</p><div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-between"><span>© {new Date().getFullYear()} {SITE.name}. Todos los derechos reservados.</span><span>Sonrisas que iluminan</span></div></div></footer> }

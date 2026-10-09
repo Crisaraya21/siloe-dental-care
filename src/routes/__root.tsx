@@ -11,8 +11,8 @@ import { type ReactNode } from "react";
 import { Home, MessageCircle, CalendarDays } from "lucide-react";
 
 import appCss from "../styles.css?url";
-import logoAsset from "@/assets/image-9.png.asset.json";
-import { SITE, getAssetUrl, whatsappLink } from "@/lib/site";
+import logoImage from "@/assets/logo 1 clinica dental.png";
+import { SITE, whatsappLink } from "@/lib/site";
 
 function NotFoundComponent() {
   return (
@@ -23,7 +23,7 @@ function NotFoundComponent() {
       />
       <div className="w-full max-w-lg text-center">
         <img
-          src={getAssetUrl(logoAsset.url)}
+          src={logoImage}
           alt={`Logo de ${SITE.name}`}
           width={72}
           height={72}

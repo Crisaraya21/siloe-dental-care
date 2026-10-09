@@ -29,10 +29,12 @@ export const CLINIC_COORDS = { lat: 10.3391562, lng: -84.4348303 } as const;
 export const DIRECTIONS_URL =
   "https://www.google.com/maps/dir//Cl%C3%ADnica+Silo%C3%A9,+50+oeste+de+liceo+San+Carlos+y+200+sur,+Provincia+de+Alajuela,+Cd+Quesada,+Barrio+San+Roque,+21001/@10.3391562,-84.4348303,17z/data=!4m8!4m7!1m0!1m5!1m1!1s0x8fa06564fbcc10d9:0x43a7729e03db00ad!2m2!1d-84.4348303!2d10.3391562";
 
-export const FULL_ADDRESS = `${SITE.addressLine}, ${SITE.city}, ${SITE.region}, ${SITE.country}`;
+// Opción "Otro servicio" del formulario de citas: obliga a describir qué necesita la persona.
+export const OTHER_SERVICE_NAME = "Otro servicio";
+export const OTHER_SERVICE_MIN_DETAIL = 5;
+export const OTHER_SERVICE_DETAIL_ERROR = `Cuéntanos qué servicio necesitas (mínimo ${OTHER_SERVICE_MIN_DETAIL} caracteres).`;
 
-export const getAssetUrl = (url: string) =>
-  url.startsWith("/__l5e/") ? `https://siloe-dental-care.lovable.app${url}` : url;
+export const FULL_ADDRESS = `${SITE.addressLine}, ${SITE.city}, ${SITE.region}, ${SITE.country}`;
 
 export function whatsappLink(message: string) {
   return `https://wa.me/${SITE.phoneIntl}?text=${encodeURIComponent(message)}`;

@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { escapeHtml, formatDate, getTodayDate } from "@/lib/appointment-utils";
 import { getClientKey, isRateLimited, isTooFast } from "@/lib/anti-spam";
 import { sendEmail } from "@/lib/mailer";
-import { getBookingHoursForDate } from "@/lib/site";
+import { OTHER_SERVICE_DETAIL_ERROR, OTHER_SERVICE_MIN_DETAIL, OTHER_SERVICE_NAME, getBookingHoursForDate } from "@/lib/site";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -74,6 +74,11 @@ export const Route = createFileRoute("/api/appointments")({
             preferredDate < getTodayDate() ||
             // Horario real de la clínica: sábado solo en la mañana y domingo cerrado.
             !getBookingHoursForDate(preferredDate).includes(preferredTime);
+
+          // "Otro servicio" exige describir qué necesita la persona (mínimo 5 caracteres).
+          if (service === OTHER_SERVICE_NAME && (message === null || message.length < OTHER_SERVICE_MIN_DETAIL)) {
+            return Response.json({ ok: false, error: OTHER_SERVICE_DETAIL_ERROR }, { status: 400 });
+          }
 
           if (invalid) {
             return Response.json(

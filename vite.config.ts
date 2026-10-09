@@ -1,26 +1,24 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+// Configuración de Vite para publicar la página en Netlify.
+import { defineConfig } from "vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import netlify from "@netlify/vite-plugin-tanstack-start";
+import viteReact from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
-  build: {
-    rollupOptions: {
-      external: ["nodemailer"],
-    },
-    rolldownOptions: {
-      external: ["nodemailer"],
-    },
-  },
-  ssr: {
-    external: ["nodemailer"],
-  },
-});
+export default defineConfig(({ command }) => ({
+  // Mismo puerto de antes (8080) y visible en la red local, para probar desde el celular.
+  server: { host: true, port: 8080, strictPort: false },
+  plugins: [
+    tsConfigPaths(),
+    tanstackStart({
+      // Usa src/server.ts como entrada del servidor (envuelve los errores de renderizado con una página amable).
+      server: { entry: "server" },
+    }),
+    viteReact(),
+    tailwindcss(),
+    // El complemento de Netlify solo se usa al compilar para publicar. En desarrollo no hace falta
+    // y pide herramientas extra (Deno) que pueden dar error.
+    ...(command === "build" ? [netlify()] : []),
+  ],
+}));
