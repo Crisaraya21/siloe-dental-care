@@ -5,6 +5,8 @@ import { FULL_ADDRESS, SITE } from "@/lib/site";
 export const Route = createFileRoute("/aviso-legal")({
   head: () => ({
     meta: [
+      // Páginas legales: se pueden leer desde el pie de página, pero no deben salir en Google.
+      { name: "robots", content: "noindex, follow" },
       { title: `Aviso legal | ${SITE.name}` },
       {
         name: "description",

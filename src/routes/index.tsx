@@ -508,6 +508,7 @@ function Reviews() {
   const [hover, setHover] = useState(0);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [showReviewList, setShowReviewList] = useState(false);
   const [newReviewIds, setNewReviewIds] = useState<Set<string>>(() => new Set());
   const [showReminder, setShowReminder] = useState(false);
   const [showLocalForm, setShowLocalForm] = useState(false);
@@ -834,7 +835,22 @@ function Reviews() {
             ))}
           </div>
         ) : reviews.length > 0 && (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8">
+            <div className="flex justify-center font-[system-ui,sans-serif]">
+              <Button
+                type="button"
+                variant="goldOutline"
+                className="rounded-full px-6"
+                aria-expanded={showReviewList}
+                aria-controls="lista-resenas"
+                onClick={() => setShowReviewList((open) => !open)}
+              >
+                {showReviewList ? "Ocultar reseñas" : `Ver reseñas (${reviews.length})`}
+                <ChevronDown className={`transition-transform duration-200 ease-out motion-reduce:transition-none ${showReviewList ? "rotate-180" : "rotate-0"}`} />
+              </Button>
+            </div>
+            {showReviewList && (
+          <div id="lista-resenas" className="mt-6 grid gap-4 sm:grid-cols-2">
             {reviews.map((review) => (
               <article key={review.id} className={`rounded-xl border border-ink/10 bg-background p-5 text-left transition-[transform,opacity] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none ${newReviewIds.has(review.id) ? "translate-y-3 opacity-0 motion-reduce:translate-y-0 motion-reduce:opacity-100" : "translate-y-0 opacity-100"}`}>
                 <div className="flex items-center justify-between gap-3">
@@ -849,6 +865,8 @@ function Reviews() {
                 <time className="mt-3 block text-xs text-ink/45" dateTime={review.created_at}>{new Intl.DateTimeFormat("es-CR", { dateStyle: "medium" }).format(new Date(review.created_at))}</time>
               </article>
             ))}
+          </div>
+            )}
           </div>
         )}
       </div>
@@ -911,7 +929,7 @@ function Location() {
           <div className="mt-8 space-y-6">
             <div className="flex gap-4">
               <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary"><MapPin size={20} /></span>
-              <div><p className="text-sm font-semibold text-ivory">Dirección</p><p className="mt-1 text-sm leading-6 text-ivory/70">200 oeste y 200 sur del Liceo San Carlos,<br className="hidden sm:block" /> Ciudad Quesada</p></div>
+              <div><p className="text-sm font-semibold text-ivory">Dirección</p><p className="mt-1 text-sm leading-6 text-ivory/70">50 oeste del Liceo San Carlos y 200 sur,<br className="hidden sm:block" /> Ciudad Quesada</p></div>
             </div>
             <div className="flex gap-4 border-t border-primary/15 pt-6">
               <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary"><Clock3 size={20} /></span>
