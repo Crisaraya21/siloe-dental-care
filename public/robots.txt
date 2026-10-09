@@ -16,5 +16,4 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-# PENDIENTE: cambiar el dominio cuando tengan el definitivo.
-Sitemap: https://siloe-dental-care.lovable.app/sitemap.xml
+Sitemap: https://clinicadentalsiloe.com/sitemap.xml

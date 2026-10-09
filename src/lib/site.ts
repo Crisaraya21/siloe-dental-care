@@ -6,7 +6,7 @@
 export const SITE = {
   name: "Clínica Dental Siloé",
   // PENDIENTE: cambiar por el dominio propio cuando lo tengan (sin diagonal al final).
-  url: "https://siloe-dental-care.lovable.app",
+  url: "https://clinicadentalsiloe.com",
   phoneDisplay: "7013 7712",
   phoneIntl: "50670137712",
   email: "clinicadentalsiloe@gmail.com",
