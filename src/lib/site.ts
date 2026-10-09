@@ -10,7 +10,7 @@ export const SITE = {
   phoneDisplay: "7013 7712",
   phoneIntl: "50670137712",
   email: "clinicadentalsiloe@gmail.com",
-  addressLine: "200 oeste y 200 sur del Liceo San Carlos",
+  addressLine: "50 oeste del Liceo San Carlos y 200 sur",
   city: "Ciudad Quesada",
   region: "Alajuela",
   country: "Costa Rica",

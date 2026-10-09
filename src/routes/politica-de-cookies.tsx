@@ -5,6 +5,8 @@ import { SITE } from "@/lib/site";
 export const Route = createFileRoute("/politica-de-cookies")({
   head: () => ({
     meta: [
+      // Páginas legales: se pueden leer desde el pie de página, pero no deben salir en Google.
+      { name: "robots", content: "noindex, follow" },
       { title: `Política de cookies | ${SITE.name}` },
       {
         name: "description",
